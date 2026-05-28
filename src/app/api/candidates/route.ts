@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
   // Create verification record
   await service.from('verifications').insert({
     candidate_id: candidate.id,
+    checkpoint: 'C1',
     didit_session_id: sessionData.session_id,
     workflow_id: workflowId,
     session_url: sessionData.url,

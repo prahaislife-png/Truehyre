@@ -18,7 +18,11 @@ const LABELS: Record<string, string> = {
 
 export default function SendLinkBox({ sessionUrl, candidateId, candidateName, candidateEmail, checkpoint }: Props) {
   const [copied, setCopied] = useState(false)
-  const consentUrl = `${window.location.origin}/consent/${sessionUrl.split('/').pop()}?cid=${candidateId}`
+  const [refreshing, setRefreshing] = useState(false)
+  const [currentSessionUrl, setCurrentSessionUrl] = useState(sessionUrl)
+
+  const token = currentSessionUrl.split('/').pop() ?? ''
+  const consentUrl = `${window.location.origin}/consent/${token}?cid=${candidateId}`
   const label = LABELS[checkpoint]
 
   async function copy() {
@@ -27,13 +31,41 @@ export default function SendLinkBox({ sessionUrl, candidateId, candidateName, ca
     setTimeout(() => setCopied(false), 2000)
   }
 
+  async function refreshSession() {
+    setRefreshing(true)
+    try {
+      const res = await fetch(`/api/candidates/${candidateId}/refresh-session`, { method: 'POST' })
+      if (!res.ok) {
+        const err = await res.json()
+        alert(err.error ?? 'Failed to refresh session')
+        return
+      }
+      const data = await res.json()
+      setCurrentSessionUrl(data.session_url)
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   return (
     <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
-      <div className="flex items-center gap-2">
-        <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-        </svg>
-        <p className="text-sm font-semibold text-blue-900">Send {label} link to {candidateName}</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+          <p className="text-sm font-semibold text-blue-900">Send {label} link to {candidateName}</p>
+        </div>
+        {checkpoint === 'C1' && (
+          <button
+            onClick={refreshSession}
+            disabled={refreshing}
+            className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+            title="Generate a new link if the current one has expired"
+          >
+            {refreshing ? 'Refreshing…' : 'Refresh link'}
+          </button>
+        )}
       </div>
 
       <p className="text-xs text-blue-700">
