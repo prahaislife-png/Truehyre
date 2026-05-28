@@ -6,6 +6,7 @@ import CheckpointTimeline from '@/components/CheckpointTimeline'
 import CheckpointActions from '@/components/CheckpointActions'
 import SendLinkBox from '@/components/SendLinkBox'
 import CandidateRefresher from '@/components/CandidateRefresher'
+import CandidateDetailActions from '@/components/CandidateDetailActions'
 import type { CandidateStatus, Verification, DiditWarning } from '@/lib/types'
 import Link from 'next/link'
 
@@ -38,16 +39,18 @@ export default async function CandidateDetailPage({
 
   await requireOrg(supabase, user.id)
 
-  const [candidateResult, verificationsResult, auditResult] =
+  const [candidateResult, verificationsResult, auditResult, clientsResult] =
     await Promise.all([
       supabase.from('candidates').select('*, clients(name)').eq('id', id).maybeSingle(),
       supabase.from('verifications').select('*').eq('candidate_id', id).order('created_at', { ascending: false }),
       supabase.from('audit_log').select('*').eq('candidate_id', id).order('created_at', { ascending: false }),
+      supabase.from('clients').select('*').order('name'),
     ])
 
   const candidate = candidateResult.data
   const allVerifications = verificationsResult.data
   const auditEntries = auditResult.data
+  const clients = clientsResult.data ?? []
 
   if (!candidate) notFound()
 
@@ -78,7 +81,7 @@ export default async function CandidateDetailPage({
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
         {/* Header card */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold">{candidate.full_name}</h2>
               <p className="text-sm text-gray-500 mt-0.5">{candidate.email}</p>
@@ -90,7 +93,10 @@ export default async function CandidateDetailPage({
                 <p className="text-sm text-gray-600">Client: {(candidate.clients as { name: string }).name}</p>
               )}
             </div>
-            <StatusBadge status={candidate.overall_status as CandidateStatus} />
+            <div className="flex flex-col items-end gap-3 flex-shrink-0">
+              <StatusBadge status={candidate.overall_status as CandidateStatus} />
+              <CandidateDetailActions candidate={candidate} clients={clients} />
+            </div>
           </div>
 
           {candidate.didit_session_id && (
