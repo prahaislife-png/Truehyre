@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TrueHire — Partner Briefing</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:#0d1117; color:#fff; overflow:hidden; }
+
+.deck { width:100vw; height:100vh; position:relative; }
+.slide { display:none; width:100%; height:100%; position:absolute; top:0; left:0; padding:56px 80px; flex-direction:column; justify-content:center; }
+.slide.active { display:flex; }
+
+/* Themes */
+.s-dark  { background:#0d1117; }
+.s-navy  { background:linear-gradient(160deg,#0d1b2a 0%,#0f2744 100%); }
+.s-cover { background:linear-gradient(135deg,#020817 0%,#0d1b2a 50%,#0f2744 100%); }
+.s-deep  { background:linear-gradient(160deg,#0a0a14 0%,#111827 100%); }
+.s-green { background:linear-gradient(160deg,#052e16 0%,#064e3b 100%); }
+.s-tech  { background:linear-gradient(160deg,#0c0a20 0%,#1e1b4b 100%); }
+
+/* Type */
+.eyebrow { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; color:#60a5fa; }
+h1.hero  { font-size:70px; font-weight:900; line-height:1.0; letter-spacing:-2px; color:#fff; }
+h2.title { font-size:44px; font-weight:900; line-height:1.1; letter-spacing:-1px; margin-bottom:10px; color:#f1f5f9; }
+.acc { color:#60a5fa; }
+.acc-g { color:#34d399; }
+.acc-a { color:#fbbf24; }
+.sub { font-size:18px; color:#94a3b8; line-height:1.6; max-width:780px; }
+
+/* Stat boxes */
+.s-row { display:flex; gap:18px; margin-top:32px; }
+.sb { flex:1; border-radius:14px; padding:22px 20px; }
+.sb.r { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); }
+.sb.b { background:rgba(96,165,250,0.08); border:1px solid rgba(96,165,250,0.25); }
+.sb.g { background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); }
+.sb.a { background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.25); }
+.sb.w { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); }
+.sb .n { font-size:46px; font-weight:900; letter-spacing:-2px; line-height:1; }
+.sb.r .n { color:#f87171; }
+.sb.b .n { color:#60a5fa; }
+.sb.g .n { color:#34d399; }
+.sb.a .n { color:#fbbf24; }
+.sb.w .n { color:#e2e8f0; }
+.sb .l { font-size:12px; color:#94a3b8; margin-top:7px; line-height:1.4; }
+.sb .src { font-size:10px; color:#475569; margin-top:5px; font-style:italic; }
+
+/* Two col */
+.tc { display:grid; grid-template-columns:1fr 1fr; gap:28px; margin-top:28px; align-items:start; }
+.tc3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-top:28px; }
+
+/* Cards */
+.card { border-radius:14px; padding:22px; }
+.card.dark { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); }
+.card.blue { background:rgba(96,165,250,0.06); border:1px solid rgba(96,165,250,0.2); }
+.card.green { background:rgba(52,211,153,0.06); border:1px solid rgba(52,211,153,0.2); }
+.card.amber { background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.2); }
+.card.red { background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2); }
+.card h4 { font-size:14px; font-weight:800; margin-bottom:8px; }
+.card.blue h4 { color:#93c5fd; }
+.card.green h4 { color:#6ee7b7; }
+.card.amber h4 { color:#fcd34d; }
+.card.red h4 { color:#fca5a5; }
+.card.dark h4 { color:#e2e8f0; }
+.card p { font-size:13px; color:#94a3b8; line-height:1.55; }
+
+/* Didit API table */
+.api-table { width:100%; border-collapse:collapse; margin-top:20px; }
+.api-table th { text-align:left; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#475569; padding:8px 14px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.api-table td { padding:12px 14px; font-size:13px; color:#cbd5e1; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:top; }
+.api-table tr:last-child td { border-bottom:none; }
+.api-table td.endpoint { font-family:monospace; font-size:12px; color:#93c5fd; }
+.api-table td.tag { }
+.tag { display:inline-block; font-size:10px; font-weight:700; border-radius:4px; padding:2px 7px; }
+.tag.post { background:rgba(96,165,250,0.2); color:#60a5fa; }
+.tag.get  { background:rgba(52,211,153,0.2); color:#34d399; }
+.tag.c1   { background:rgba(96,165,250,0.2); color:#93c5fd; }
+.tag.c2   { background:rgba(251,191,36,0.2); color:#fcd34d; }
+.tag.c3   { background:rgba(52,211,153,0.2); color:#6ee7b7; }
+
+/* Checkpoint flow */
+.cp3 { display:flex; gap:0; margin-top:24px; align-items:stretch; }
+.cpb { flex:1; border-radius:0; padding:22px 18px; border:1px solid rgba(255,255,255,0.08); position:relative; }
+.cpb:first-child { border-radius:14px 0 0 14px; }
+.cpb:last-child  { border-radius:0 14px 14px 0; }
+.cpb.hl { background:rgba(251,191,36,0.06); border-color:rgba(251,191,36,0.3); z-index:1; }
+.cpb.b  { background:rgba(96,165,250,0.04); }
+.cpb.g  { background:rgba(52,211,153,0.04); }
+.cpb-badge { display:inline-block; font-size:10px; font-weight:800; border-radius:20px; padding:3px 11px; margin-bottom:10px; }
+.cpb.b .cpb-badge { background:rgba(96,165,250,0.15); color:#93c5fd; }
+.cpb.hl .cpb-badge { background:rgba(251,191,36,0.15); color:#fcd34d; }
+.cpb.g .cpb-badge { background:rgba(52,211,153,0.15); color:#34d399; }
+.cpb-title { font-size:15px; font-weight:800; margin-bottom:4px; }
+.cpb-when  { font-size:11px; color:#60a5fa; font-weight:600; margin-bottom:8px; }
+.cpb.hl .cpb-when { color:#fbbf24; }
+.cpb.g  .cpb-when { color:#34d399; }
+.cpb-desc  { font-size:12px; color:#94a3b8; line-height:1.5; }
+.cpb-modules { margin-top:10px; }
+.mono { display:inline-block; background:rgba(255,255,255,0.06); border-radius:4px; font-size:10px; font-family:monospace; color:#94a3b8; padding:2px 6px; margin:2px 2px 0 0; }
+.cpb-note { margin-top:10px; font-size:11px; font-weight:600; padding:7px 10px; border-radius:8px; }
+.cpb.b  .cpb-note { background:rgba(96,165,250,0.1); color:#93c5fd; }
+.cpb.hl .cpb-note { background:rgba(251,191,36,0.1); color:#fcd34d; }
+.cpb.g  .cpb-note { background:rgba(52,211,153,0.1); color:#34d399; }
+
+/* Econ table */
+.et { width:100%; border-collapse:collapse; margin-top:20px; }
+.et th { text-align:left; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#475569; padding:8px 14px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.et td { padding:13px 14px; font-size:14px; color:#cbd5e1; border-bottom:1px solid rgba(255,255,255,0.04); }
+.et .hl-row td { background:rgba(52,211,153,0.05); }
+.et .val { font-weight:700; }
+.et .g { color:#34d399; }
+.et .b { color:#60a5fa; }
+.et .a { color:#fbbf24; }
+
+/* Bullets */
+.blist { list-style:none; margin-top:16px; }
+.blist li { display:flex; gap:12px; align-items:flex-start; font-size:14px; color:#94a3b8; margin-bottom:12px; line-height:1.5; }
+.blist li .ic { flex-shrink:0; margin-top:1px; }
+
+/* Roadmap */
+.rm { display:flex; gap:14px; margin-top:24px; }
+.rmp { flex:1; border-radius:12px; padding:18px 16px; border:1px solid; }
+.rmp.done  { border-color:rgba(52,211,153,0.3); background:rgba(52,211,153,0.04); }
+.rmp.now   { border-color:rgba(96,165,250,0.4); background:rgba(96,165,250,0.07); }
+.rmp.next  { border-color:rgba(251,191,36,0.3); background:rgba(251,191,36,0.04); }
+.rmp.later { border-color:rgba(255,255,255,0.07); background:rgba(255,255,255,0.02); }
+.rmp-tag   { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
+.rmp.done  .rmp-tag { color:#34d399; }
+.rmp.now   .rmp-tag { color:#60a5fa; }
+.rmp.next  .rmp-tag { color:#fbbf24; }
+.rmp.later .rmp-tag { color:#4b5563; }
+.rmp-title { font-size:14px; font-weight:800; margin-bottom:10px; }
+.rmp ul { list-style:none; }
+.rmp ul li { font-size:12px; color:#94a3b8; margin-bottom:5px; padding-left:14px; position:relative; }
+.rmp ul li::before { content:'→'; position:absolute; left:0; }
+
+/* Ask */
+.ask { background:rgba(96,165,250,0.07); border:1px solid rgba(96,165,250,0.25); border-radius:18px; padding:32px 36px; max-width:700px; margin-top:28px; }
+.ask h3 { font-size:22px; font-weight:800; margin-bottom:14px; color:#93c5fd; }
+.ask ol { padding-left:20px; }
+.ask ol li { font-size:15px; color:#cbd5e1; margin-bottom:10px; line-height:1.5; }
+.ask .signal { margin-top:14px; background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.25); border-radius:10px; padding:12px 16px; font-size:13px; color:#34d399; font-weight:600; }
+
+/* Decoration */
+.sn { position:absolute; top:26px; right:38px; font-size:11px; color:#1f2937; font-weight:600; letter-spacing:1px; }
+
+/* Nav */
+.nav { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; z-index:100; background:rgba(15,23,42,0.9); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:50px; padding:8px 16px; }
+.nav button { background:none; border:none; color:#4b5563; cursor:pointer; font-size:18px; padding:4px 8px; }
+.nav button:hover { color:#fff; }
+.nav .sc { font-size:12px; color:#4b5563; min-width:56px; text-align:center; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- SLIDE 1 — COVER -->
+<div class="slide s-cover active" id="s1">
+  <div style="position:absolute;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(96,165,250,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,0.03) 1px,transparent 1px);background-size:60px 60px;"></div>
+  <div class="sn">01</div>
+  <div class="eyebrow">Partner Product Briefing — Confidential</div>
+  <h1 class="hero">True<span style="color:#60a5fa;">Hire</span></h1>
+  <p style="font-size:22px;color:#64748b;margin-top:10px;font-weight:300;">Verified Talent. Zero Doubt.</p>
+  <p style="font-size:16px;color:#475569;margin-top:20px;max-width:600px;line-height:1.6;">What we built, how it works, what Didit does, the business model, and exactly how to sell it.</p>
+  <div style="margin-top:32px;display:flex;gap:10px;flex-wrap:wrap;">
+    <span style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);color:#93c5fd;font-size:12px;font-weight:600;border-radius:20px;padding:5px 14px;">Internal Briefing — May 2026</span>
+    <span style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);color:#34d399;font-size:12px;font-weight:600;border-radius:20px;padding:5px 14px;">Product Live at truehyre.vercel.app</span>
+  </div>
+</div>
+
+<!-- SLIDE 2 — WHAT THIS IS -->
+<div class="slide s-dark" id="s2">
+  <div class="sn">02 / 15</div>
+  <div class="eyebrow">What we built</div>
+  <h2 class="title">A SaaS product — not a feature,<br/>not a service. A <span class="acc">scalable product</span><br/>you own and can sell.</h2>
+  <div class="tc" style="margin-top:24px;">
+    <div>
+      <div class="card green" style="margin-bottom:16px;">
+        <h4>What it is</h4>
+        <p>A candidate identity and fraud verification platform for staffing, HR, and hiring teams. Proves the person you interview is the real, government-ID-verified person — at submission, interview, and offer stage. Built on top of enterprise-grade biometric infrastructure.</p>
+      </div>
+      <div class="card red">
+        <h4>What it is NOT (v1)</h4>
+        <p>Not a traditional background check. No employment history, criminal records, education verification. Those need country-specific data sources and manual ops. We stay on the identity/anti-deepfake slice — that is where the pain is hottest and where incumbents are weakest.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card blue" style="margin-bottom:16px;">
+        <h4>Why this specifically</h4>
+        <p>Gartner projects 1 in 4 candidate profiles will be fake by 2028. IT and tech roles account for ~60% of deepfake fraud — exactly the talent this channel places. The window to be first with a real product is now.</p>
+      </div>
+      <div class="card amber">
+        <h4>The advantage</h4>
+        <p>An existing sales channel with 70+ active clients across staffing, RPO, Web3, and IT hiring. The product goes to market through relationships that already exist. No cold outreach needed to run pilots.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3 — THE PAIN IS REAL -->
+<div class="slide s-navy" id="s3">
+  <div class="sn">03 / 15</div>
+  <div class="eyebrow">Market context</div>
+  <h2 class="title">The pain is real, documented,<br/>and <span class="acc">getting worse every quarter.</span></h2>
+  <div class="s-row">
+    <div class="sb r">
+      <div class="n">1 in 4</div>
+      <div class="l">Candidate profiles fake by 2028</div>
+      <div class="src">Gartner, 2024</div>
+    </div>
+    <div class="sb a">
+      <div class="n">70 min</div>
+      <div class="l">To create a deepfake candidate that passes a video interview</div>
+      <div class="src">Palo Alto Networks</div>
+    </div>
+    <div class="sb r">
+      <div class="n">1,800+</div>
+      <div class="l">Suspected North Korean fake workers blocked by Amazon in 2024 alone</div>
+      <div class="src">News reporting, 2024</div>
+    </div>
+    <div class="sb b">
+      <div class="n">3–5×</div>
+      <div class="l">Annual salary — cost of one bad hire when you include investigation and client remediation</div>
+      <div class="src">Industry estimates</div>
+    </div>
+  </div>
+  <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:16px 20px;margin-top:20px;">
+    <p style="font-size:14px;color:#fca5a5;line-height:1.6;"><strong style="color:#f87171;">The critical gap:</strong> Traditional background checks tell you who someone was. They do absolutely nothing to confirm the person on your video call today is that person. That gap is now being exploited systematically.</p>
+  </div>
+</div>
+
+<!-- SLIDE 4 — WHAT DIDIT IS -->
+<div class="slide s-tech" id="s4">
+  <div class="sn">04 / 15</div>
+  <div class="eyebrow">The infrastructure layer — Didit</div>
+  <h2 class="title">Didit is the <span class="acc">biometric engine.</span><br/>TrueHire is the product<br/>built on top of it.</h2>
+  <div class="tc3" style="margin-top:20px;">
+    <div class="card dark">
+      <h4 style="color:#60a5fa;">What Didit provides</h4>
+      <ul class="blist" style="margin-top:8px;">
+        <li><span class="ic" style="color:#34d399;">✓</span>Government ID OCR (220+ countries, 10,000+ document types)</li>
+        <li><span class="ic" style="color:#34d399;">✓</span>Liveness detection (iBeta PAD Level 1 — deepfake-resistant)</li>
+        <li><span class="ic" style="color:#34d399;">✓</span>Face match 1:1 (compare two images)</li>
+        <li><span class="ic" style="color:#34d399;">✓</span>Face search 1:N (search entire pool)</li>
+        <li><span class="ic" style="color:#34d399;">✓</span>AML / PEP / sanctions screening</li>
+        <li><span class="ic" style="color:#34d399;">✓</span>IP analysis (VPN, proxy, Tor)</li>
+      </ul>
+    </div>
+    <div class="card dark">
+      <h4 style="color:#60a5fa;">How we use it</h4>
+      <ul class="blist" style="margin-top:8px;">
+        <li><span class="ic" style="color:#60a5fa;">→</span>Create verification sessions server-side — never expose the API key to the browser</li>
+        <li><span class="ic" style="color:#60a5fa;">→</span>Send candidates a hosted URL — Didit handles biometric consent + camera</li>
+        <li><span class="ic" style="color:#60a5fa;">→</span>Receive results via signed webhook (HMAC-SHA256)</li>
+        <li><span class="ic" style="color:#60a5fa;">→</span>Store decisions, run face-match for C2/C3</li>
+      </ul>
+    </div>
+    <div class="card dark">
+      <h4 style="color:#fbbf24;">Why Didit (not build-your-own)</h4>
+      <ul class="blist" style="margin-top:8px;">
+        <li><span class="ic" style="color:#fbbf24;">★</span>iBeta PAD L1 certification — courts and regulators accept it</li>
+        <li><span class="ic" style="color:#fbbf24;">★</span>500 free verifications/month — zero pilot cost</li>
+        <li><span class="ic" style="color:#fbbf24;">★</span>Per-call pricing — cost scales with revenue</li>
+        <li><span class="ic" style="color:#fbbf24;">★</span>Bank-grade compliance built in</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5 — DIDIT API CALLS WE MAKE -->
+<div class="slide s-dark" id="s5">
+  <div class="sn">05 / 15</div>
+  <div class="eyebrow">Didit — API calls we make</div>
+  <h2 class="title">Six API calls.<br/><span class="acc">The full verification chain.</span></h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Call</th>
+        <th>Endpoint</th>
+        <th>When</th>
+        <th>What it does</th>
+        <th>Checkpoint</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag post">POST</span> Create session</td>
+        <td class="endpoint">/v3/session/</td>
+        <td>Recruiter triggers check</td>
+        <td>Creates hosted verification URL for candidate</td>
+        <td><span class="tag c1">C1</span> <span class="tag c2">C2</span> <span class="tag c3">C3</span></td>
+      </tr>
+      <tr>
+        <td><span class="tag get">GET</span> Get decision</td>
+        <td class="endpoint">/v3/session/{id}/decision/</td>
+        <td>On webhook or on-demand</td>
+        <td>Fetches full verification result JSON</td>
+        <td><span class="tag c1">C1</span> <span class="tag c2">C2</span> <span class="tag c3">C3</span></td>
+      </tr>
+      <tr>
+        <td><span class="tag post">POST</span> Face match</td>
+        <td class="endpoint">/v3/face-match/</td>
+        <td>After C2/C3 approved</td>
+        <td>1:1 compare new selfie vs C1 reference image → MATCH or NO MATCH score</td>
+        <td><span class="tag c2">C2</span> <span class="tag c3">C3</span></td>
+      </tr>
+      <tr>
+        <td><span class="tag post">POST</span> Face search</td>
+        <td class="endpoint">/v3/face-search/</td>
+        <td>After C1/C2/C3 approved</td>
+        <td>1:N search across entire pool — detects one person with multiple fake identities</td>
+        <td><span class="tag c1">C1</span> <span class="tag c2">C2</span> <span class="tag c3">C3</span></td>
+      </tr>
+      <tr>
+        <td><span class="tag post">POST</span> Generate PDF</td>
+        <td class="endpoint">/v3/session/{id}/pdf</td>
+        <td>On recruiter request</td>
+        <td>Returns compliance-grade PDF report for download</td>
+        <td><span class="tag c1">C1</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.15);border-radius:10px;padding:12px 16px;margin-top:16px;">
+    <p style="font-size:13px;color:#93c5fd;">Webhook: Didit sends <span style="font-family:monospace;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px;">status.updated</span> and <span style="font-family:monospace;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px;">data.updated</span> events to <span style="font-family:monospace;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px;">/api/webhooks/didit</span> — HMAC-SHA256 signed, timestamp-checked, idempotent. All C2/C3 post-processing (face-match, pool search) happens automatically on this webhook.</p>
+  </div>
+</div>
+
+<!-- SLIDE 6 — THE 3-CHECKPOINT ARCHITECTURE -->
+<div class="slide s-navy" id="s6">
+  <div class="sn">06 / 15</div>
+  <div class="eyebrow">Product architecture</div>
+  <h2 class="title">The 3-checkpoint design.<br/><span class="acc">One verified thread</span> across<br/>the entire hiring journey.</h2>
+  <div class="cp3">
+    <div class="cpb b">
+      <span class="cpb-badge">C1</span>
+      <div class="cpb-title">Submission Check</div>
+      <div class="cpb-when">At candidate submission</div>
+      <div class="cpb-desc">Full ID verification + liveness. Establishes the trusted baseline. Selfie URL stored as reference for all future checks.</div>
+      <div class="cpb-modules">
+        <span class="mono">ID_OCR</span><span class="mono">LIVENESS</span><span class="mono">FACE_MATCH</span><span class="mono">IP_ANALYSIS</span><span class="mono">AML (opt)</span>
+      </div>
+      <div class="cpb-note">Enrolls face in pool (face-search). Reference stored in DB.</div>
+    </div>
+    <div class="cpb hl">
+      <span class="cpb-badge">C2 ★ KEY</span>
+      <div class="cpb-title">Interview Check</div>
+      <div class="cpb-when">Before the live interview</div>
+      <div class="cpb-desc">Active liveness + 1:1 face match vs C1 reference + 1:N pool search. Detects proxies, deepfakes, duplicate identities. Automatic MATCH / NO MATCH / DUPLICATE verdict.</div>
+      <div class="cpb-modules">
+        <span class="mono">ACTIVE_3D</span><span class="mono">face-match</span><span class="mono">face-search</span>
+      </div>
+      <div class="cpb-note">This is the only thing that stops real-time deepfakes and proxies.</div>
+    </div>
+    <div class="cpb g">
+      <span class="cpb-badge">C3</span>
+      <div class="cpb-title">Offer Check</div>
+      <div class="cpb-when">At offer acceptance</div>
+      <div class="cpb-desc">Final biometric re-confirmation vs C1 baseline. Clean legal audit trail. Proves the person signing the offer is the one who was verified.</div>
+      <div class="cpb-modules">
+        <span class="mono">LIVENESS</span><span class="mono">face-match</span>
+      </div>
+      <div class="cpb-note">Documented reasonable verification — legal defence for the firm.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7 — TECH STACK -->
+<div class="slide s-dark" id="s7">
+  <div class="sn">07 / 15</div>
+  <div class="eyebrow">Technology stack</div>
+  <h2 class="title">Full-stack web app.<br/><span class="acc">Modern, scalable, live.</span></h2>
+  <div class="tc3" style="margin-top:20px;">
+    <div class="card blue">
+      <h4>Frontend + Backend</h4>
+      <p><strong style="color:#fff;">Next.js (App Router)</strong> on Vercel. Server components for pages, route handlers for API. TypeScript throughout. Tailwind CSS. Auto-deploy on every GitHub push.</p>
+    </div>
+    <div class="card blue">
+      <h4>Database + Auth</h4>
+      <p><strong style="color:#fff;">Supabase (Postgres + Auth)</strong>. Row-level security so recruiters see only their own candidates. Admin, recruiter, and client-viewer roles. Cookie-based sessions via @supabase/ssr.</p>
+    </div>
+    <div class="card blue">
+      <h4>Verification Engine</h4>
+      <p><strong style="color:#fff;">Didit API</strong>. Server-side session creation only — API key never reaches the browser. Webhook handler with HMAC signature verification, replay protection, and idempotency.</p>
+    </div>
+  </div>
+  <div style="margin-top:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px 22px;">
+    <p style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#475569;margin-bottom:12px;">Data stored per candidate</p>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:#94a3b8;">candidates (identity record)</span>
+      <span style="font-size:12px;color:#475569;">→</span>
+      <span style="font-size:12px;color:#94a3b8;">verifications (one row per C1/C2/C3)</span>
+      <span style="font-size:12px;color:#475569;">→</span>
+      <span style="font-size:12px;color:#94a3b8;">decision_json, face_match_score, liveness_score, duplicate_face_flag</span>
+      <span style="font-size:12px;color:#475569;">→</span>
+      <span style="font-size:12px;color:#94a3b8;">webhook_events (dedupe), audit_log</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8 — WHAT'S BUILT -->
+<div class="slide s-green" id="s8">
+  <div class="sn">08 / 15</div>
+  <div class="eyebrow">What is already live</div>
+  <h2 class="title">Core product is <span class="acc-g">fully built</span><br/>and deployed. This is<br/>not a prototype.</h2>
+  <div class="tc" style="margin-top:20px;">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:12px 16px;">
+        <span style="color:#34d399;font-size:16px;font-weight:700;">✓</span>
+        <span style="font-size:14px;color:#d1fae5;">Recruiter login + dashboard with candidate list</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:12px 16px;">
+        <span style="color:#34d399;font-size:16px;font-weight:700;">✓</span>
+        <span style="font-size:14px;color:#d1fae5;">Add candidate → create Didit session → send C1 link</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:12px 16px;">
+        <span style="color:#34d399;font-size:16px;font-weight:700;">✓</span>
+        <span style="font-size:14px;color:#d1fae5;">Webhook handler — receives result, stores decision, updates status</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:12px 16px;">
+        <span style="color:#34d399;font-size:16px;font-weight:700;">✓</span>
+        <span style="font-size:14px;color:#d1fae5;">Candidate report with Pass / Review / Fail + compliance PDF download</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:12px 16px;">
+        <span style="color:#34d399;font-size:16px;font-weight:700;">✓</span>
+        <span style="font-size:14px;color:#d1fae5;">C2 + C3 triggers — face match, pool search, duplicate detection</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:12px 16px;">
+        <span style="color:#34d399;font-size:16px;font-weight:700;">✓</span>
+        <span style="font-size:14px;color:#d1fae5;">C1→C2→C3 timeline with MATCH / NO MATCH / DUPLICATE FACE verdict</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:12px 16px;">
+        <span style="color:#34d399;font-size:16px;font-weight:700;">✓</span>
+        <span style="font-size:14px;color:#d1fae5;">Full audit trail on every candidate</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="card dark" style="border-color:rgba(96,165,250,0.2);">
+        <h4 style="color:#60a5fa;">Live at</h4>
+        <p style="font-size:16px;color:#93c5fd;font-family:monospace;margin-top:4px;">truehyre.vercel.app</p>
+        <p style="margin-top:8px;">Auto-deploys from GitHub on every push. Running on Vercel free tier — scales automatically.</p>
+      </div>
+      <div class="card dark" style="border-color:rgba(251,191,36,0.2);">
+        <h4 style="color:#fcd34d;">Still to build</h4>
+        <p>Billing/usage dashboard · Email notifications · Batch CSV upload · Client viewer login · White-label branding config · AML toggle · Consent/DPDP screen</p>
+        <p style="margin-top:8px;color:#6b7280;font-size:12px;">None of these block the first paid pilot.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9 — BUSINESS MODEL -->
+<div class="slide s-dark" id="s9">
+  <div class="sn">09 / 15</div>
+  <div class="eyebrow">Business model</div>
+  <h2 class="title">Per-candidate SaaS.<br/><span class="acc">Three revenue lines.</span></h2>
+  <table class="et">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Our cost (Didit)</th>
+        <th>Sell price</th>
+        <th>Margin</th>
+        <th>Target buyer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>C1 Submission Check</td>
+        <td class="val">~₹28–45</td>
+        <td class="val b">₹149</td>
+        <td class="val g">3–4×</td>
+        <td style="font-size:12px;color:#475569;">All staffing clients</td>
+      </tr>
+      <tr>
+        <td>C1 + AML (regulated roles)</td>
+        <td class="val">~₹45–65</td>
+        <td class="val b">₹249</td>
+        <td class="val g">4–5×</td>
+        <td style="font-size:12px;color:#475569;">BFSI / fintech clients</td>
+      </tr>
+      <tr class="hl-row">
+        <td><strong>Full 3-Checkpoint (C1+C2+C3)</strong></td>
+        <td class="val">~₹50–60</td>
+        <td class="val b"><strong>₹499</strong></td>
+        <td class="val g"><strong>8–10×</strong></td>
+        <td style="font-size:12px;color:#475569;">Premium — remote/tech hires</td>
+      </tr>
+      <tr>
+        <td>Volume subscription (TA teams)</td>
+        <td class="val">Variable</td>
+        <td class="val b">₹5,000–25,000/mo</td>
+        <td class="val g">High</td>
+        <td style="font-size:12px;color:#475569;">In-house TA teams</td>
+      </tr>
+      <tr>
+        <td>White-label license (other firms)</td>
+        <td class="val">Dev overhead only</td>
+        <td class="val b">₹50,000–2L/mo</td>
+        <td class="val g">Very high</td>
+        <td style="font-size:12px;color:#475569;">Other staffing firms</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="s-row" style="margin-top:18px;">
+    <div class="sb g" style="padding:16px 18px;">
+      <div class="n" style="font-size:32px;">500</div>
+      <div class="l">Free verifications/month — pilots cost nothing</div>
+    </div>
+    <div class="sb b" style="padding:16px 18px;">
+      <div class="n" style="font-size:32px;">₹0</div>
+      <div class="l">Enterprise contract needed — self-serve from day one</div>
+    </div>
+    <div class="sb a" style="padding:16px 18px;">
+      <div class="n" style="font-size:32px;">3rd</div>
+      <div class="l">Revenue line: license to other staffing firms (Phase 3)</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10 — GTM STRATEGY -->
+<div class="slide s-navy" id="s10">
+  <div class="sn">10 / 15</div>
+  <div class="eyebrow">Go-to-market</div>
+  <h2 class="title">No cold outreach.<br/><span class="acc">The buyers already exist.</span></h2>
+  <div class="tc3" style="margin-top:20px;">
+    <div class="card green">
+      <h4>Phase 1 — Existing clients</h4>
+      <p>70+ active clients in staffing, RPO, tech, Web3. Add TrueHire as a line item to every candidate submission. "Verified candidate" becomes a product feature, not an extra burden.</p>
+      <p style="margin-top:10px;color:#6ee7b7;font-size:12px;font-weight:600;">No new sales motion. Just a conversation with people already buying from you.</p>
+    </div>
+    <div class="card blue">
+      <h4>Phase 2 — Standalone product</h4>
+      <p>Any company doing their own remote or global hiring can buy TrueHire directly — no staffing intermediary. Self-serve, no contract, per-candidate pricing. Web3, IT, fintech, startups.</p>
+      <p style="margin-top:10px;color:#93c5fd;font-size:12px;font-weight:600;">Inbound marketing + LinkedIn targeting TA teams directly.</p>
+    </div>
+    <div class="card amber">
+      <h4>Phase 3 — License model</h4>
+      <p>White-label TrueHire to other staffing firms in India and SEA. They get a branded product, you get recurring SaaS revenue without adding headcount.</p>
+      <p style="margin-top:10px;color:#fcd34d;font-size:12px;font-weight:600;">Platform play. Second revenue line from the same codebase.</p>
+    </div>
+  </div>
+  <div style="background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.15);border-radius:12px;padding:14px 18px;margin-top:16px;">
+    <p style="font-size:14px;color:#93c5fd;">The pitch to existing clients: <em style="color:#cbd5e1;">"We've added a 2-minute identity check to every candidate we submit. You get a verified candidate report — no deepfakes, no proxies. Same placement service, with a guarantee attached."</em></p>
+  </div>
+</div>
+
+<!-- SLIDE 11 — HOW TO SELL IT -->
+<div class="slide s-dark" id="s11">
+  <div class="sn">11 / 15</div>
+  <div class="eyebrow">The sales conversation</div>
+  <h2 class="title">Five questions.<br/><span class="acc">Ask these first.</span> Then show the product.</h2>
+  <div class="tc3" style="margin-top:16px;">
+    <div class="card dark" style="border-color:rgba(239,68,68,0.2);">
+      <h4 style="color:#fca5a5;">Q1 — Has it happened?</h4>
+      <p>"In the last year, have you been burned by a candidate who wasn't who they claimed — a proxy, a fake profile?"<br/><br/><strong style="color:#6ee7b7;">Good signal:</strong> a specific story. <strong style="color:#f87171;">No signal:</strong> "not really" — wrong buyer, move on.</p>
+    </div>
+    <div class="card dark" style="border-color:rgba(251,191,36,0.2);">
+      <h4 style="color:#fcd34d;">Q2 — What do they do now?</h4>
+      <p>"Walk me through how you verify a candidate is real today."<br/><br/>Listen for: manual effort, "we check LinkedIn," no process at all. The worse their answer, the bigger your opening.</p>
+    </div>
+    <div class="card dark" style="border-color:rgba(96,165,250,0.2);">
+      <h4 style="color:#93c5fd;">Q3 — What does a miss cost?</h4>
+      <p>"What happens if a fraudulent hire gets through to your client?"<br/><br/>Listen for: lost client, compliance incident, security breach. The bigger the stated cost, the higher they'll pay.</p>
+    </div>
+    <div class="card dark" style="border-color:rgba(52,211,153,0.3);">
+      <h4 style="color:#6ee7b7;">Q4 ★ THE MONEY QUESTION</h4>
+      <p>"If there was a 2-minute check that guaranteed the interviewee is real — what would it be worth per candidate? Would you pilot 50 hires?"<br/><br/><strong style="color:#34d399;">A number = buyer. "Interesting" = not ready.</strong></p>
+    </div>
+    <div class="card dark">
+      <h4>Q5 — Path to yes</h4>
+      <p>"Who signs off on this, and how does it need to fit into your hiring process?"<br/><br/>Listen for: the actual decision-maker and ATS integration constraints. Shapes what we build next.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12 — OBJECTIONS -->
+<div class="slide s-navy" id="s12">
+  <div class="sn">12 / 15</div>
+  <div class="eyebrow">Common objections — pre-answered</div>
+  <h2 class="title">Every objection you'll hear.<br/><span class="acc">The exact response.</span></h2>
+  <div class="tc" style="margin-top:16px;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card dark" style="border-color:rgba(239,68,68,0.2);">
+        <h4 style="color:#fca5a5;">"We already do background checks."</h4>
+        <p>BGV tells you who someone was — not whether the person on your video call is that person today. It doesn't run at the interview stage. It doesn't detect deepfakes or proxies. TrueHire is the layer that incumbent BGV providers simply don't have.</p>
+      </div>
+      <div class="card dark" style="border-color:rgba(251,191,36,0.2);">
+        <h4 style="color:#fcd34d;">"Candidates won't agree to this."</h4>
+        <p>2 minutes on their phone, no app, no account. Faster and less invasive than a police verification. For a competitive role, candidates who are genuine want to prove it — it's a differentiator for them.</p>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card dark" style="border-color:rgba(96,165,250,0.2);">
+        <h4 style="color:#93c5fd;">"Too expensive / complicated to set up."</h4>
+        <p>The recruiter sends a link. That's the setup. First 500 verifications are free. Per-candidate pricing — no contract, no minimum. A login and you're live in minutes.</p>
+      </div>
+      <div class="card dark" style="border-color:rgba(52,211,153,0.2);">
+        <h4 style="color:#6ee7b7;">"What about DPDP / data privacy?"</h4>
+        <p>Explicit consent before the check starts. Didit is enterprise-grade infrastructure. Better for compliance than a manual process with no audit trail. Data minimisation built in.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13 — WHAT MAKES US DIFFERENT -->
+<div class="slide s-tech" id="s13">
+  <div class="sn">13 / 15</div>
+  <div class="eyebrow">Our differentiators</div>
+  <h2 class="title">Not another KYC tool.<br/><span class="acc">Four things nobody else has.</span></h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px;">
+    <div class="card dark" style="padding:26px;border-color:rgba(251,191,36,0.3);">
+      <div style="font-size:36px;margin-bottom:12px;">⚡</div>
+      <h4 style="font-size:17px;color:#fcd34d;margin-bottom:8px;">Interview-stage anti-deepfake</h4>
+      <p>The only product with a certified deepfake-resistant check timed to the live interview. No incumbent — BGV provider, LinkedIn, or ID vendor — has this at interview stage.</p>
+    </div>
+    <div class="card dark" style="padding:26px;border-color:rgba(239,68,68,0.3);">
+      <div style="font-size:36px;margin-bottom:12px;">🔍</div>
+      <h4 style="font-size:17px;color:#fca5a5;margin-bottom:8px;">Duplicate face detection</h4>
+      <p>1:N search across your entire candidate pool. One person holding multiple fake identities across your submissions gets caught automatically — the first time it matters.</p>
+    </div>
+    <div class="card dark" style="padding:26px;border-color:rgba(52,211,153,0.3);">
+      <div style="font-size:36px;margin-bottom:12px;">♻️</div>
+      <h4 style="font-size:17px;color:#6ee7b7;margin-bottom:8px;">Reusable verified identity</h4>
+      <p>Verify once at C1. Submit to any number of clients using the same trusted baseline — no re-verification needed. The verification follows the candidate, not the job.</p>
+    </div>
+    <div class="card dark" style="padding:26px;border-color:rgba(96,165,250,0.3);">
+      <div style="font-size:36px;margin-bottom:12px;">🛡️</div>
+      <h4 style="font-size:17px;color:#93c5fd;margin-bottom:8px;">Legal audit trail by design</h4>
+      <p>Every check is timestamped and produces a downloadable compliance PDF. Documented "reasonable verification" — not just a result, but a legal defence for every placement.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 14 — ROADMAP -->
+<div class="slide s-dark" id="s14">
+  <div class="sn">14 / 15</div>
+  <div class="eyebrow">Product roadmap</div>
+  <h2 class="title">First pilot is achievable<br/><span class="acc">in the next 30 days.</span></h2>
+  <div class="rm">
+    <div class="rmp done">
+      <div class="rmp-tag">✓ Built</div>
+      <div class="rmp-title">Core product</div>
+      <ul>
+        <li>Recruiter auth + dashboard</li>
+        <li>Add candidate + send C1</li>
+        <li>Webhook → decision stored</li>
+        <li>Pass/Review/Fail report + PDF</li>
+        <li>C2 + C3 trigger + face match</li>
+        <li>Duplicate detection</li>
+        <li>Checkpoint timeline UI</li>
+        <li>Full audit trail</li>
+      </ul>
+    </div>
+    <div class="rmp now">
+      <div class="rmp-tag">→ Now (2 weeks)</div>
+      <div class="rmp-title">First pilot</div>
+      <ul>
+        <li>Consent / DPDP screen</li>
+        <li>White-label branding</li>
+        <li>Client viewer (read-only)</li>
+        <li>Validate with 3 clients</li>
+        <li>Run first paid pilot</li>
+      </ul>
+    </div>
+    <div class="rmp next">
+      <div class="rmp-tag">→ Month 2–3</div>
+      <div class="rmp-title">Productize</div>
+      <ul>
+        <li>Billing + usage dashboard</li>
+        <li>Email/WhatsApp notifications</li>
+        <li>Batch / CSV upload</li>
+        <li>AML module on/off toggle</li>
+        <li>Reusable verified ID</li>
+      </ul>
+    </div>
+    <div class="rmp later">
+      <div class="rmp-tag">Later — demand-driven</div>
+      <div class="rmp-title">Scale</div>
+      <ul>
+        <li>ATS integrations</li>
+        <li>Multi-tenant for licensing</li>
+        <li>BGV partner (trad checks)</li>
+        <li>Mobile app for recruiters</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 15 — THE ASK -->
+<div class="slide s-cover" id="s15">
+  <div style="position:absolute;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(96,165,250,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,0.03) 1px,transparent 1px);background-size:60px 60px;"></div>
+  <div class="sn">15 / 15</div>
+  <div class="eyebrow">Next step</div>
+  <h2 class="title" style="font-size:48px;">One commitment.<br/><span class="acc">Three client calls.</span><br/>Seven days.</h2>
+  <div class="ask">
+    <h3>Validate before we productize</h3>
+    <ol>
+      <li>Pick 3 existing clients hiring for remote or tech roles. Schedule 15-minute calls this week.</li>
+      <li>Ask: <em>"Has a candidate ever not been who they claimed?"</em> → then <em>"What would you pay per candidate to guarantee the interviewer is real?"</em></li>
+      <li>2 of 3 give a number or commit to a pilot → full green light to productize and launch.</li>
+    </ol>
+    <div class="signal">Green light = a number, a "yes to pilot," or "send me pricing." Enthusiasm without a commitment is not a green light.</div>
+  </div>
+</div>
+
+</div>
+
+<nav class="nav">
+  <button onclick="prev()">‹</button>
+  <span class="sc" id="ctr">1 / 15</span>
+  <button onclick="next()">›</button>
+</nav>
+<script>
+let cur=1,tot=15;
+function show(n){
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  document.getElementById('ctr').textContent=n+' / '+tot;
+  cur=n;
+}
+function next(){if(cur<tot)show(cur+1);}
+function prev(){if(cur>1)show(cur-1);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown')next();
+  if(e.key==='ArrowLeft'||e.key==='PageUp')prev();
+});
+</script>
+</body>
+</html>

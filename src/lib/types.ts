@@ -13,10 +13,18 @@ export type CandidateStatus =
   | 'expired'
   | 'kyc_expired'
 
+export interface Organization {
+  id: string
+  name: string
+  slug: string
+  created_at: string
+}
+
 export interface Client {
   id: string
   name: string
   contact: string | null
+  org_id: string | null
   created_at: string
 }
 
@@ -25,6 +33,19 @@ export interface UserProfile {
   email: string
   role: UserRole
   client_id: string | null
+  org_id: string | null
+}
+
+export interface Invitation {
+  id: string
+  org_id: string
+  email: string
+  role: UserRole
+  token: string
+  invited_by: string | null
+  accepted_at: string | null
+  expires_at: string
+  created_at: string
 }
 
 export interface Candidate {

@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TrueHire — Product Architecture & Complete Flow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f8f9fa;
+    color: #1a1a2e;
+    line-height: 1.6;
+  }
+
+  /* Print */
+  @media print {
+    .no-print { display: none !important; }
+    body { background: white; }
+    .page-break { page-break-before: always; }
+    section { break-inside: avoid; }
+  }
+
+  /* Layout */
+  .container { max-width: 980px; margin: 0 auto; padding: 0 32px 80px; }
+
+  /* Top bar */
+  .topbar {
+    background: linear-gradient(135deg, #0c1d4a, #1e4ab8);
+    color: white;
+    padding: 28px 0;
+    margin-bottom: 48px;
+  }
+  .topbar .inner {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar .logo-icon {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .topbar h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+  .topbar .doc-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .topbar .doc-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+  .badge-live {
+    font-size: 10px; font-weight: 700;
+    background: rgba(52,211,153,0.2);
+    color: #6ee7b7;
+    border: 1px solid rgba(52,211,153,0.3);
+    border-radius: 100px;
+    padding: 3px 10px;
+  }
+
+  /* Print button */
+  .print-btn {
+    background: white;
+    color: #1e4ab8;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .print-btn:hover { background: #f0f4ff; }
+
+  /* Section */
+  section { margin-bottom: 48px; }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .section-num {
+    width: 28px; height: 28px;
+    background: #1e4ab8;
+    color: white;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0c1d4a;
+    letter-spacing: -0.4px;
+  }
+  .section-divider {
+    height: 2px;
+    background: linear-gradient(to right, #1e4ab8, transparent);
+    margin-bottom: 22px;
+    border-radius: 2px;
+  }
+
+  /* Cards */
+  .card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .card + .card { margin-top: 14px; }
+
+  /* Info box */
+  .info-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 13.5px;
+    color: #1e40af;
+    margin-bottom: 16px;
+  }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  @media (max-width: 680px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* Step flow */
+  .step-flow { display: flex; flex-direction: column; gap: 0; }
+  .step-row {
+    display: flex;
+    gap: 16px;
+    position: relative;
+  }
+  .step-icon-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .step-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .step-line {
+    flex: 1;
+    width: 2px;
+    background: repeating-linear-gradient(to bottom, #d1d5db 0, #d1d5db 5px, transparent 5px, transparent 10px);
+    margin: 4px 0;
+  }
+  .step-body { padding-bottom: 22px; flex: 1; min-width: 0; }
+  .step-body h4 { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 4px; margin-top: 7px; }
+  .step-body p { font-size: 13px; color: #6b7280; line-height: 1.5; }
+  .step-body ul { font-size: 13px; color: #6b7280; padding-left: 16px; margin-top: 6px; }
+  .step-body ul li { margin-bottom: 3px; }
+
+  /* Checkpoint cards */
+  .checkpoint-card {
+    border-radius: 14px;
+    padding: 22px;
+    border: 1px solid;
+  }
+  .c1 { background: #eff6ff; border-color: #bfdbfe; }
+  .c2 { background: #faf5ff; border-color: #e9d5ff; }
+  .c3 { background: #f0fdf4; border-color: #bbf7d0; }
+
+  .checkpoint-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .checkpoint-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: white;
+  }
+  .cp-c1 .checkpoint-num { background: #2563eb; }
+  .cp-c2 .checkpoint-num { background: #7c3aed; }
+  .cp-c3 .checkpoint-num { background: #059669; }
+
+  .checkpoint-header h3 { font-size: 15px; font-weight: 700; color: #111827; }
+  .checkpoint-header .when { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+  .cp-c1 .when { background: #dbeafe; color: #1d4ed8; }
+  .cp-c2 .when { background: #ede9fe; color: #5b21b6; }
+  .cp-c3 .when { background: #dcfce7; color: #15803d; }
+
+  .checkpoint-content p { font-size: 13px; color: #374151; line-height: 1.5; margin-bottom: 10px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 100px;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(0,0,0,0.1);
+    color: #374151;
+  }
+
+  /* Tech table */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th {
+    text-align: left; padding: 10px 14px;
+    background: #f3f4f6;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: #6b7280;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+
+  /* Verdict badges */
+  .verdict { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+  .verdict-pass { background: #dcfce7; color: #166534; }
+  .verdict-review { background: #fef9c3; color: #92400e; }
+  .verdict-fail { background: #fee2e2; color: #991b1b; }
+
+  /* Highlight stat */
+  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+  .stat-box {
+    flex: 1; min-width: 120px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-box .val { font-size: 26px; font-weight: 900; color: #1e4ab8; letter-spacing: -1px; }
+  .stat-box .lbl { font-size: 11px; color: #9ca3af; font-weight: 600; margin-top: 3px; }
+
+  /* Role box */
+  .role-box {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .role-header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .role-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .role-header h3 { font-size: 14px; font-weight: 700; }
+  .role-header p { font-size: 12px; color: #6b7280; }
+  .role-steps { padding: 0 20px 20px; }
+  .role-step {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .role-step:last-child { border-bottom: none; }
+  .role-step .n {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 10px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .role-step .text h5 { font-size: 13px; font-weight: 600; color: #111827; }
+  .role-step .text p { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+  /* Arch diagram */
+  .arch-layer {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .arch-layer-label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .arch-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .arch-chip {
+    font-size: 12px; font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .arch-arrow {
+    text-align: center;
+    color: #d1d5db;
+    font-size: 18px;
+    margin: -4px 0;
+    line-height: 1;
+  }
+
+  /* Callout */
+  .callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    margin-top: 14px;
+  }
+  .callout-blue { background: #eff6ff; border: 1px solid #bfdbfe; }
+  .callout-green { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .callout-yellow { background: #fffbeb; border: 1px solid #fde68a; }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout p { font-size: 13px; color: #374151; }
+  .callout strong { color: #111827; }
+
+  /* Data field list */
+  .field-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .field-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 13px; color: #374151;
+  }
+  .field-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+
+  /* Webhook flow */
+  .wh-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .wh-box {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+    min-width: 110px;
+  }
+  .wh-arrow {
+    color: #9ca3af;
+    padding: 0 8px;
+    font-size: 16px;
+    font-weight: 300;
+  }
+  .wh-label { color: #6b7280; font-size: 12px; }
+
+  /* Footer */
+  .footer {
+    background: #0c1d4a;
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    margin-top: 60px;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="inner">
+    <div style="display:flex; align-items:center; gap:20px;">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <span style="font-size:15px; font-weight:800; letter-spacing:-0.3px;">TrueHire</span>
+        <span class="badge-live">LIVE</span>
+      </div>
+      <div>
+        <div class="doc-title">Product Architecture & Complete Flow</div>
+        <div class="doc-sub">How TrueHire works — from recruiter login to candidate verified</div>
+      </div>
+    </div>
+    <button class="print-btn no-print" onclick="window.print()">Save as PDF</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- WHAT IS TRUEHIRE -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">01</div>
+      <h2>What Is TrueHire?</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="info-box">
+      <strong>One-line definition:</strong> TrueHire is a candidate identity verification platform that confirms a real person behind each job application — at the application stage, interview stage, and offer stage — before a hiring decision is made.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box"><div class="val">3</div><div class="lbl">Verification Checkpoints</div></div>
+      <div class="stat-box"><div class="val">~2</div><div class="lbl">Minutes per Verification</div></div>
+      <div class="stat-box"><div class="val">220+</div><div class="lbl">Countries Covered</div></div>
+      <div class="stat-box"><div class="val">0</div><div class="lbl">Apps Required</div></div>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:14px; color:#111827;">The core problem it solves</strong>
+      <p style="font-size:13.5px; color:#374151; margin-top:8px; line-height:1.6;">
+        In remote and high-volume hiring, a recruiter has no way to confirm that the person who submitted a resume is the same person who will show up for an interview — or the same person who will eventually join the company. Candidates can impersonate others, use hired proxies for interviews, or misrepresent their identity entirely. TrueHire fixes this by running a government ID + biometric selfie + liveness check at each of the 3 critical hiring stages, producing a pass/review/fail verdict the recruiter can act on instantly.
+      </p>
+    </div>
+  </section>
+
+  <!-- THE 3 CHECKPOINTS -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">02</div>
+      <h2>The 3-Checkpoint System — The Core Concept</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <p style="font-size:13.5px; color:#374151; margin-bottom:18px; line-height:1.6;">
+      Most identity tools verify once and stop. TrueHire runs three separate identity checks — one at each gate of the hiring process — confirming that the same verified person is present at every stage. This eliminates the proxy interview problem and ensures continuity from first contact to hire.
+    </p>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+      <div class="checkpoint-card c1 cp-c1">
+        <div class="checkpoint-header">
+          <div class="checkpoint-num">C1</div>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3>Checkpoint 1 — Application Stage</h3>
+              <span class="when">Before shortlisting</span>
+            </div>
+          </div>
+        </div>
+        <div class="checkpoint-content">
+          <p><strong>Purpose:</strong> Confirm the candidate is a real person with a valid government ID. This is the enrollment step — it creates the biometric identity record for this candidate in the system.</p>
+          <p><strong>What happens:</strong> Candidate scans their government ID (passport, national ID, driving licence), takes a live selfie, and the system runs a liveness check + face-to-document match. AML (Anti-Money Laundering) and PEP (Politically Exposed Persons) sanctions screening also runs here.</p>
+          <p><strong>System action:</strong> On success, the candidate's verified face is enrolled in TrueHire's face pool. All future face comparisons are made against this C1 selfie as the "source of truth".</p>
+          <div class="tag-row">
+            <span class="tag">Government ID Scan</span>
+            <span class="tag">Live Selfie</span>
+            <span class="tag">Liveness Detection</span>
+            <span class="tag">Face-to-ID Match</span>
+            <span class="tag">AML Screening</span>
+            <span class="tag">PEP Check</span>
+            <span class="tag">Face Enrollment</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkpoint-card c2 cp-c2">
+        <div class="checkpoint-header">
+          <div class="checkpoint-num">C2</div>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3>Checkpoint 2 — Interview Stage</h3>
+              <span class="when">Before the interview</span>
+            </div>
+          </div>
+        </div>
+        <div class="checkpoint-content">
+          <p><strong>Purpose:</strong> Confirm that the person attending the interview is the same person who applied. Catches proxy candidates — where someone else shows up to the interview on behalf of the applicant.</p>
+          <p><strong>What happens:</strong> Candidate takes a fresh live selfie (no ID required this time). The system runs a 1:1 face match against their C1 selfie (same person?) and a 1:N face search across all candidates in the pool (is this face someone else's identity?).</p>
+          <p><strong>Duplicate detection:</strong> If the face matches a different candidate in the pool with 70%+ similarity, a duplicate flag is raised — meaning someone is attending interviews as multiple people.</p>
+          <div class="tag-row">
+            <span class="tag">Live Selfie Only</span>
+            <span class="tag">1:1 Face Match vs C1</span>
+            <span class="tag">1:N Duplicate Search</span>
+            <span class="tag">Proxy Detection</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkpoint-card c3 cp-c3">
+        <div class="checkpoint-header">
+          <div class="checkpoint-num">C3</div>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3>Checkpoint 3 — Offer Stage</h3>
+              <span class="when">Before offer is sent</span>
+            </div>
+          </div>
+        </div>
+        <div class="checkpoint-content">
+          <p><strong>Purpose:</strong> Final identity gate before the offer is issued. Ensures that after all interviews are done, the same person is still the one receiving the offer — eliminating last-minute identity switches.</p>
+          <p><strong>What happens:</strong> Same as C2 — live selfie, 1:1 face match vs C1, 1:N duplicate search. But now if anything fails, the offer process is blocked and the recruiter is alerted before any commitment is made.</p>
+          <p><strong>System action:</strong> Produces a final downloadable PDF report containing all 3 checkpoint results, scores, and a clear Pass / Review / Fail verdict for the recruiter's file.</p>
+          <div class="tag-row">
+            <span class="tag">Live Selfie Only</span>
+            <span class="tag">1:1 Face Match vs C1</span>
+            <span class="tag">1:N Duplicate Search</span>
+            <span class="tag">PDF Report</span>
+            <span class="tag">Final Verdict</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECRUITER FLOW -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">03</div>
+      <h2>Recruiter Flow — Step by Step</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="callout callout-blue">
+      <div class="callout-icon">👤</div>
+      <p>The recruiter is the user of TrueHire. They log into the dashboard, manage candidates, and decide when to trigger each checkpoint. They never touch the candidate's device — they just send links and read results.</p>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div class="step-flow">
+
+        <div class="step-row">
+          <div class="step-icon-col">
+            <div class="step-circle" style="background:#1e4ab8;">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4>Sign Up & Set Up Organisation</h4>
+            <p>Recruiter signs up at app.truehire.com with a work email. Supabase creates their account. Their organisation workspace is ready immediately — no approval waiting period. They can invite team members from the dashboard.</p>
+          </div>
+        </div>
+
+        <div class="step-row">
+          <div class="step-icon-col">
+            <div class="step-circle" style="background:#2563eb;">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4>Add a Candidate</h4>
+            <p>From the dashboard, they click "Add Candidate" and fill in:</p>
+            <ul>
+              <li>Candidate full name</li>
+              <li>Candidate email address</li>
+              <li>Role / job title they applied for</li>
+            </ul>
+            <p style="margin-top:6px;">This takes under 30 seconds. The candidate record is created in the database and their status shows "C1 Pending".</p>
+          </div>
+        </div>
+
+        <div class="step-row">
+          <div class="step-icon-col">
+            <div class="step-circle" style="background:#3b82f6;">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4>Send the C1 Verification Link</h4>
+            <p>Recruiter clicks "Send C1 Link". One of three options:</p>
+            <ul>
+              <li><strong>Email</strong> — system sends the link directly to the candidate's email</li>
+              <li><strong>WhatsApp / Copy</strong> — recruiter copies the link and pastes it into any channel (WhatsApp, LinkedIn, Slack, etc.)</li>
+            </ul>
+            <p style="margin-top:6px;">The candidate receives a unique, single-use, time-limited URL generated by the Didit API.</p>
+          </div>
+        </div>
+
+        <div class="step-row">
+          <div class="step-icon-col">
+            <div class="step-circle" style="background:#6366f1;">4</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4>Wait for C1 Result</h4>
+            <p>The dashboard shows "C1 In Progress" while the candidate completes verification. When done, the status updates to:</p>
+            <ul>
+              <li><span class="verdict verdict-pass">PASS</span> — verified, face enrolled, safe to proceed</li>
+              <li><span class="verdict verdict-review">MANUAL REVIEW</span> — something needs human review (blurry ID, lighting issue)</li>
+              <li><span class="verdict verdict-fail">FAIL</span> — document invalid, liveness failed, AML hit</li>
+            </ul>
+            <p style="margin-top:6px;">Recruiter can view detailed scores: liveness confidence, face match %, document validity, AML result.</p>
+          </div>
+        </div>
+
+        <div class="step-row">
+          <div class="step-icon-col">
+            <div class="step-circle" style="background:#7c3aed;">5</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4>Trigger C2 Before Interview</h4>
+            <p>Once C1 is approved (PASS), the "Send C2 Link" button becomes active. Before scheduling the interview, recruiter sends the C2 link. The candidate completes a quick selfie-only check (~30 seconds). Recruiter sees the face match % against their C1 selfie and a duplicate flag (if triggered).</p>
+          </div>
+        </div>
+
+        <div class="step-row">
+          <div class="step-icon-col">
+            <div class="step-circle" style="background:#059669;">6</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4>Trigger C3 Before Offer</h4>
+            <p>After interviews are complete and before issuing the offer letter, recruiter sends C3 link. Same selfie check as C2. On completion, the full candidate report is available for download as a PDF — containing all three checkpoint results in a single document.</p>
+          </div>
+        </div>
+
+        <div class="step-row">
+          <div class="step-icon-col">
+            <div class="step-circle" style="background:#d97706;">7</div>
+          </div>
+          <div class="step-body">
+            <h4>Download Report & Archive</h4>
+            <p>Final PDF report is available from the candidate detail page. It contains: candidate name, role, all 3 checkpoint dates and verdicts, liveness scores, face match percentages, AML status, and a final overall decision. This can be kept on file as evidence of due diligence in the hiring process.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CANDIDATE FLOW -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">04</div>
+      <h2>Candidate Flow — Step by Step</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="callout callout-green">
+      <div class="callout-icon">🙋</div>
+      <p>The candidate never logs into TrueHire. They receive a link, open it on any device — phone or desktop — and complete the verification in their browser. <strong>No app download required.</strong> The whole process takes roughly 2 minutes per checkpoint.</p>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:14px; flex-wrap:wrap;">
+
+      <!-- C1 Candidate Experience -->
+      <div class="role-box" style="flex:1; min-width:280px;">
+        <div class="role-header" style="background:#eff6ff; border-bottom: 1px solid #bfdbfe;">
+          <div class="role-icon" style="background:#dbeafe; font-size:18px;">📋</div>
+          <div>
+            <h3 style="font-size:13px; color:#1e40af;">C1 — Candidate Experience</h3>
+            <p style="font-size:11px;">~2 minutes total</p>
+          </div>
+        </div>
+        <div class="role-steps">
+          <div class="role-step">
+            <div class="n" style="background:#dbeafe; color:#1d4ed8;">1</div>
+            <div class="text"><h5>Opens the link</h5><p>Taps the link received via email or WhatsApp. Opens in mobile browser — no app needed. Sees a TrueHire branded verification screen.</p></div>
+          </div>
+          <div class="role-step">
+            <div class="n" style="background:#dbeafe; color:#1d4ed8;">2</div>
+            <div class="text"><h5>Scans government ID</h5><p>Uses camera to photograph front (and back if required) of passport, national ID, or driving licence. Document is validated automatically.</p></div>
+          </div>
+          <div class="role-step">
+            <div class="n" style="background:#dbeafe; color:#1d4ed8;">3</div>
+            <div class="text"><h5>Takes live selfie</h5><p>Camera activates. Candidate looks directly into camera. Liveness check runs — detects blinking, head movement to confirm a real person, not a photo.</p></div>
+          </div>
+          <div class="role-step">
+            <div class="n" style="background:#dbeafe; color:#1d4ed8;">4</div>
+            <div class="text"><h5>Done — sees result screen</h5><p>Immediately shown a "Verification complete — your recruiter will be notified" message. No action needed after this.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C2/C3 Candidate Experience -->
+      <div class="role-box" style="flex:1; min-width:280px;">
+        <div class="role-header" style="background:#f0fdf4; border-bottom: 1px solid #bbf7d0;">
+          <div class="role-icon" style="background:#dcfce7; font-size:18px;">🤳</div>
+          <div>
+            <h3 style="font-size:13px; color:#166534;">C2 & C3 — Candidate Experience</h3>
+            <p style="font-size:11px;">~30 seconds total</p>
+          </div>
+        </div>
+        <div class="role-steps">
+          <div class="role-step">
+            <div class="n" style="background:#dcfce7; color:#15803d;">1</div>
+            <div class="text"><h5>Opens the new link</h5><p>Same experience — taps the link, opens in browser. Branded TrueHire screen. No ID required this time, only selfie.</p></div>
+          </div>
+          <div class="role-step">
+            <div class="n" style="background:#dcfce7; color:#15803d;">2</div>
+            <div class="text"><h5>Takes live selfie</h5><p>Camera activates. Quick liveness check — same process as C1. Typically faster because no document scanning step.</p></div>
+          </div>
+          <div class="role-step">
+            <div class="n" style="background:#dcfce7; color:#15803d;">3</div>
+            <div class="text"><h5>Done</h5><p>Confirmation screen shown. In the background, TrueHire compares this selfie to the C1 selfie and scans the face pool for duplicates. The candidate doesn't wait for this — it happens server-side.</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TECHNICAL ARCHITECTURE -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">05</div>
+      <h2>Technical Architecture</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div style="margin-bottom:20px;">
+      <div class="arch-layer">
+        <div class="arch-layer-label">Frontend</div>
+        <div class="arch-chips">
+          <div class="arch-chip" style="background:#eff6ff; color:#1d4ed8;">⚡ Next.js 16 App Router</div>
+          <div class="arch-chip" style="background:#f0fdf4; color:#166534;">🎨 Tailwind CSS</div>
+          <div class="arch-chip" style="background:#faf5ff; color:#5b21b6;">🖥 Vercel Hosting</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Backend / API</div>
+        <div class="arch-chips">
+          <div class="arch-chip" style="background:#eff6ff; color:#1d4ed8;">🔀 Next.js Route Handlers</div>
+          <div class="arch-chip" style="background:#fefce8; color:#92400e;">🔒 HMAC-SHA256 Webhook Auth</div>
+          <div class="arch-chip" style="background:#fff7ed; color:#9a3412;">📬 Webhook Receiver</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Auth</div>
+        <div class="arch-chips">
+          <div class="arch-chip" style="background:#f0fdf4; color:#166534;">🔐 Supabase Auth (PKCE)</div>
+          <div class="arch-chip" style="background:#f0fdf4; color:#166534;">🍪 Cookie-based Sessions</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Database</div>
+        <div class="arch-chips">
+          <div class="arch-chip" style="background:#f0fdf4; color:#166534;">🐘 Supabase PostgreSQL</div>
+          <div class="arch-chip" style="background:#f0fdf4; color:#166534;">🔑 Row Level Security (RLS)</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">ID Verification</div>
+        <div class="arch-chips">
+          <div class="arch-chip" style="background:#fff7ed; color:#9a3412;">🆔 Didit API — Session Create</div>
+          <div class="arch-chip" style="background:#fff7ed; color:#9a3412;">👁 Didit API — Face Match (1:1)</div>
+          <div class="arch-chip" style="background:#fff7ed; color:#9a3412;">🔍 Didit API — Face Search (1:N)</div>
+          <div class="arch-chip" style="background:#fff7ed; color:#9a3412;">📄 Didit API — PDF Report</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT IS DIDIT AND HOW IT WORKS -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">06</div>
+      <h2>Didit — The Verification Engine</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="info-box">
+      <strong>Didit</strong> is TrueHire's identity verification infrastructure provider. TrueHire does not do its own ID reading, liveness detection, or face matching — Didit's API handles all of that. TrueHire is the product layer: the dashboard, the 3-checkpoint logic, the recruiter UX, and the duplicate detection across candidates.
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <strong style="font-size:13px; color:#111827; display:block; margin-bottom:14px;">The 5 Didit API calls TrueHire makes:</strong>
+      <table>
+        <thead>
+          <tr>
+            <th>API Call</th>
+            <th>When</th>
+            <th>What it does</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code style="background:#f3f4f6; padding:2px 6px; border-radius:4px; font-size:12px;">Create Session</code></td>
+            <td>When recruiter sends any checkpoint link</td>
+            <td>Generates a unique URL for the candidate to complete their ID/selfie check. Returns a <code style="background:#f3f4f6; padding:2px 6px; border-radius:4px; font-size:12px;">session_url</code>.</td>
+          </tr>
+          <tr>
+            <td><code style="background:#f3f4f6; padding:2px 6px; border-radius:4px; font-size:12px;">Webhook Callback</code></td>
+            <td>When candidate finishes verification</td>
+            <td>Didit POSTs the result to TrueHire's webhook endpoint with HMAC-SHA256 signature. TrueHire verifies the signature before trusting the data.</td>
+          </tr>
+          <tr>
+            <td><code style="background:#f3f4f6; padding:2px 6px; border-radius:4px; font-size:12px;">Face Search (1:N) — C1</code></td>
+            <td>After C1 completes</td>
+            <td>Enrolls the candidate's C1 selfie into the face pool using <code>save_api_request=true</code>. Future searches will find this face.</td>
+          </tr>
+          <tr>
+            <td><code style="background:#f3f4f6; padding:2px 6px; border-radius:4px; font-size:12px;">Face Match (1:1) — C2/C3</code></td>
+            <td>After C2 or C3 completes</td>
+            <td>Compares the new selfie against the enrolled C1 selfie. Returns a similarity % and MATCH / NO MATCH verdict.</td>
+          </tr>
+          <tr>
+            <td><code style="background:#f3f4f6; padding:2px 6px; border-radius:4px; font-size:12px;">Face Search (1:N) — C2/C3</code></td>
+            <td>After C2 or C3 completes</td>
+            <td>Searches the new selfie across all candidates in the pool. Detects if the face belongs to a different enrolled candidate (duplicate/impersonation detection).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DATA FLOW THROUGH THE SYSTEM -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">07</div>
+      <h2>Complete Data Flow</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div style="display:flex; flex-direction:column; gap:10px;">
+
+      <!-- Row 1 -->
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="wh-box" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">Recruiter Dashboard</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-label">POST /api/candidates/[id]/checkpoint</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-box" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">Didit: Create Session</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-label">Returns session_url</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-box" style="background:#f3f4f6; color:#374151; border:1px solid #e5e7eb;">Candidate gets link</div>
+      </div>
+
+      <!-- Arrow down -->
+      <div style="margin-left:20px; color:#d1d5db; font-size:18px;">↓</div>
+
+      <!-- Row 2 -->
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="wh-box" style="background:#f3f4f6; color:#374151; border:1px solid #e5e7eb;">Candidate completes ID + selfie</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-label">On Didit's hosted UI</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-box" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">Didit processes</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-label">Liveness + face-to-ID + AML</div>
+      </div>
+
+      <div style="margin-left:20px; color:#d1d5db; font-size:18px;">↓</div>
+
+      <!-- Row 3 -->
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="wh-box" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">Didit Webhook</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-label">POST /api/webhooks/didit (HMAC verified)</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-box" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">TrueHire processes result</div>
+      </div>
+
+      <div style="margin-left:20px; color:#d1d5db; font-size:18px;">↓  (C1 only)</div>
+
+      <!-- Row 4 - C1 path -->
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding-left:20px;">
+        <div class="wh-box" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">Extract selfie URL from Didit decision</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-box" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">Didit: Face Search (enroll)</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-box" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">Save reference_image_url to DB</div>
+      </div>
+
+      <div style="margin-left:20px; color:#d1d5db; font-size:18px;">↓  (C2/C3 only)</div>
+
+      <!-- Row 5 - C2/C3 path -->
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding-left:20px;">
+        <div class="wh-box" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">Download C1 selfie + new selfie</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-box" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">Didit: Face Match 1:1</div>
+        <div class="wh-arrow">+</div>
+        <div class="wh-box" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">Didit: Face Search 1:N</div>
+      </div>
+
+      <div style="margin-left:20px; color:#d1d5db; font-size:18px;">↓</div>
+
+      <!-- Row 6 -->
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding-left:20px;">
+        <div class="wh-box" style="background:#faf5ff; color:#5b21b6; border:1px solid #e9d5ff;">Check for duplicates (≥70% match on different candidate)</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-box" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">Write verdict to Supabase DB</div>
+        <div class="wh-arrow">→</div>
+        <div class="wh-box" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">Dashboard updates live</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATABASE STRUCTURE -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">08</div>
+      <h2>Database Structure</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="grid-2" style="gap:16px;">
+      <div class="card">
+        <strong style="font-size:13px; color:#111827; display:block; margin-bottom:10px;">candidates table</strong>
+        <div class="field-list">
+          <div class="field-item"><div class="field-dot" style="background:#2563eb;"></div>id (UUID)</div>
+          <div class="field-item"><div class="field-dot" style="background:#2563eb;"></div>org_id (FK → organisations)</div>
+          <div class="field-item"><div class="field-dot" style="background:#2563eb;"></div>name</div>
+          <div class="field-item"><div class="field-dot" style="background:#2563eb;"></div>email</div>
+          <div class="field-item"><div class="field-dot" style="background:#2563eb;"></div>role (job title)</div>
+          <div class="field-item"><div class="field-dot" style="background:#2563eb;"></div>created_at</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <strong style="font-size:13px; color:#111827; display:block; margin-bottom:10px;">verifications table</strong>
+        <div class="field-list">
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>id (UUID)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>candidate_id (FK)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>checkpoint (C1 / C2 / C3)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>status (pending / approved / declined)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>session_id (Didit session ID)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>session_url (link sent to candidate)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>liveness_score (0–100)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>face_match_score (0–100)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>document_valid (boolean)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>aml_status</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>reference_image_url (C1 selfie URL)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>duplicate_face_flag (boolean)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>duplicate_candidate_id (FK → candidates)</div>
+          <div class="field-item"><div class="field-dot" style="background:#7c3aed;"></div>created_at</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-yellow" style="margin-top:16px;">
+      <div class="callout-icon">🔒</div>
+      <p><strong>Row Level Security:</strong> Supabase RLS policies ensure recruiters can only read candidates and verifications that belong to their own organisation. Cross-organisation data access is impossible at the database level.</p>
+    </div>
+  </section>
+
+  <!-- VERDICT LOGIC -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">09</div>
+      <h2>How Verdicts Are Calculated</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Verdict</th>
+            <th>C1 (Application)</th>
+            <th>C2/C3 (Interview/Offer)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="verdict verdict-pass">PASS</span></td>
+            <td>ID valid + liveness passed + face-to-ID matched + AML clear</td>
+            <td>Face matches C1 selfie + no duplicate found in pool</td>
+          </tr>
+          <tr>
+            <td><span class="verdict verdict-review">MANUAL REVIEW</span></td>
+            <td>Didit returned "manual_review" — typically due to low confidence on a genuine check (blurry photo, poor lighting). Recruiter must inspect manually.</td>
+            <td>Face match % is borderline or duplicate flag raised — recruiter must decide.</td>
+          </tr>
+          <tr>
+            <td><span class="verdict verdict-fail">FAIL</span></td>
+            <td>ID tampered or expired / liveness failed (photo/video used) / AML/PEP hit</td>
+            <td>Face does not match C1 (different person) / duplicate candidate (same face found under different name)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-blue" style="margin-top:14px;">
+      <div class="callout-icon">⚡</div>
+      <p><strong>Duplicate detection threshold:</strong> If a C2/C3 selfie matches any other enrolled candidate in the pool with ≥70% similarity score — and that match belongs to a different candidate ID — a <strong>duplicate_face_flag</strong> is set and the other candidate's ID is stored. This catches one person applying as multiple candidates simultaneously.</p>
+    </div>
+  </section>
+
+  <!-- ENVIRONMENT & KEYS -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">10</div>
+      <h2>Environment Variables & Configuration</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>What it is</th><th>Where to get it</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code style="font-size:12px;">NEXT_PUBLIC_SUPABASE_URL</code></td>
+            <td>Supabase project URL</td>
+            <td>Supabase Dashboard → Project Settings</td>
+          </tr>
+          <tr>
+            <td><code style="font-size:12px;">NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td>
+            <td>Supabase anon key (public)</td>
+            <td>Supabase Dashboard → API Keys</td>
+          </tr>
+          <tr>
+            <td><code style="font-size:12px;">SUPABASE_SERVICE_ROLE_KEY</code></td>
+            <td>Supabase service key (server only)</td>
+            <td>Supabase Dashboard → API Keys</td>
+          </tr>
+          <tr>
+            <td><code style="font-size:12px;">DIDIT_CLIENT_ID</code></td>
+            <td>Didit API client ID</td>
+            <td>Didit developer portal</td>
+          </tr>
+          <tr>
+            <td><code style="font-size:12px;">DIDIT_CLIENT_SECRET</code></td>
+            <td>Didit API secret</td>
+            <td>Didit developer portal</td>
+          </tr>
+          <tr>
+            <td><code style="font-size:12px;">DIDIT_WEBHOOK_SECRET</code></td>
+            <td>HMAC secret for webhook verification</td>
+            <td>Didit developer portal → Webhooks</td>
+          </tr>
+          <tr>
+            <td><code style="font-size:12px;">DIDIT_WORKFLOW_C1</code></td>
+            <td>Workflow ID for C1 (full ID + selfie + AML)</td>
+            <td>Didit dashboard → Workflows</td>
+          </tr>
+          <tr>
+            <td><code style="font-size:12px;">DIDIT_WORKFLOW_RECHECK</code></td>
+            <td>Workflow ID for C2/C3 (selfie only)</td>
+            <td>Didit dashboard → Workflows</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- WHAT THE RECRUITER SEES IN THE DASHBOARD -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">11</div>
+      <h2>What the Recruiter Sees — Dashboard Overview</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <strong style="font-size:13px; color:#111827; display:block; margin-bottom:10px;">Candidates List Page</strong>
+        <ul style="font-size:13px; color:#374151; padding-left:16px; line-height:1.8;">
+          <li>All candidates with name, role, email</li>
+          <li>C1 / C2 / C3 status badges (colour coded)</li>
+          <li>Date of last verification activity</li>
+          <li>"Add Candidate" button</li>
+          <li>Click any row → goes to candidate detail</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <strong style="font-size:13px; color:#111827; display:block; margin-bottom:10px;">Candidate Detail Page</strong>
+        <ul style="font-size:13px; color:#374151; padding-left:16px; line-height:1.8;">
+          <li>Checkpoint timeline: C1 → C2 → C3</li>
+          <li>Per-checkpoint: status, scores, timestamps</li>
+          <li>ID details: document type, country, name from ID</li>
+          <li>AML/PEP result</li>
+          <li>Face match % between checkpoints</li>
+          <li>Duplicate flag with linked candidate (if triggered)</li>
+          <li>Send C2 / C3 link buttons (only active when eligible)</li>
+          <li>Download PDF report (after C1 approved)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECURITY PROPERTIES -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">12</div>
+      <h2>Security Properties</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <strong style="font-size:13px; color:#111827;">Webhook integrity</strong>
+        <p style="font-size:13px; color:#374151; margin-top:6px; line-height:1.5;">Every callback from Didit is signed with HMAC-SHA256 using a shared secret. TrueHire verifies the signature before processing any result — making it impossible to fake a "PASS" verdict by calling the webhook directly.</p>
+      </div>
+
+      <div class="card">
+        <strong style="font-size:13px; color:#111827;">Session isolation</strong>
+        <p style="font-size:13px; color:#374151; margin-top:6px; line-height:1.5;">Each verification link is a unique, single-use URL with an expiry. It cannot be reused or shared across candidates. It ties back to a specific candidate + checkpoint + organisation.</p>
+      </div>
+
+      <div class="card">
+        <strong style="font-size:13px; color:#111827;">Row Level Security</strong>
+        <p style="font-size:13px; color:#374151; margin-top:6px; line-height:1.5;">Supabase RLS ensures a recruiter from Company A can never accidentally access Company B's candidate data. Enforced at database level, not just application level.</p>
+      </div>
+
+      <div class="card">
+        <strong style="font-size:13px; color:#111827;">No credential storage</strong>
+        <p style="font-size:13px; color:#374151; margin-top:6px; line-height:1.5;">TrueHire does not store government ID images. Only metadata from the Didit decision (scores, document type, name) is stored in the database. Raw biometric data stays within Didit's compliant infrastructure.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FULL END TO END EXAMPLE -->
+  <section>
+    <div class="section-title">
+      <div class="section-num">13</div>
+      <h2>End-to-End Example — Ananya Sharma Applies for a DevOps Role</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="card">
+      <div style="display:flex; flex-direction:column; gap:0;">
+
+        <div style="display:flex; gap:14px; padding: 14px 0; border-bottom:1px solid #f3f4f6;">
+          <div style="width:28px; height:28px; background:#1e4ab8; border-radius:50%; color:white; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">1</div>
+          <div><strong style="font-size:13px;">Recruiter adds Ananya.</strong><p style="font-size:13px; color:#6b7280; margin-top:3px;">Name: Ananya Sharma · Email: ananya@gmail.com · Role: DevOps Engineer. Candidate record created.</p></div>
+        </div>
+
+        <div style="display:flex; gap:14px; padding: 14px 0; border-bottom:1px solid #f3f4f6;">
+          <div style="width:28px; height:28px; background:#2563eb; border-radius:50%; color:white; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">2</div>
+          <div><strong style="font-size:13px;">Recruiter sends C1 link.</strong><p style="font-size:13px; color:#6b7280; margin-top:3px;">TrueHire calls Didit: Create Session with C1 workflow. Gets back a URL. Emails it to ananya@gmail.com.</p></div>
+        </div>
+
+        <div style="display:flex; gap:14px; padding: 14px 0; border-bottom:1px solid #f3f4f6;">
+          <div style="width:28px; height:28px; background:#3b82f6; border-radius:50%; color:white; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">3</div>
+          <div><strong style="font-size:13px;">Ananya opens link on her phone.</strong><p style="font-size:13px; color:#6b7280; margin-top:3px;">Scans her Aadhaar card, takes a selfie. Liveness check passes. AML clear. Didit returns: <span class="verdict verdict-pass">PASS</span></p></div>
+        </div>
+
+        <div style="display:flex; gap:14px; padding: 14px 0; border-bottom:1px solid #f3f4f6;">
+          <div style="width:28px; height:28px; background:#6366f1; border-radius:50%; color:white; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">4</div>
+          <div><strong style="font-size:13px;">TrueHire receives Didit webhook.</strong><p style="font-size:13px; color:#6b7280; margin-top:3px;">Verifies HMAC signature. Extracts Ananya's selfie URL. Calls Didit Face Search with <code style="background:#f3f4f6; padding:1px 4px; border-radius:3px; font-size:12px;">save_api_request=true</code> — Ananya's face is now enrolled in the pool. Stores reference_image_url in DB.</p></div>
+        </div>
+
+        <div style="display:flex; gap:14px; padding: 14px 0; border-bottom:1px solid #f3f4f6;">
+          <div style="width:28px; height:28px; background:#7c3aed; border-radius:50%; color:white; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">5</div>
+          <div><strong style="font-size:13px;">Recruiter sees C1 PASS. Schedules interview.</strong><p style="font-size:13px; color:#6b7280; margin-top:3px;">Before the interview, recruiter clicks "Send C2 Link". Ananya receives a new selfie-only link.</p></div>
+        </div>
+
+        <div style="display:flex; gap:14px; padding: 14px 0; border-bottom:1px solid #f3f4f6;">
+          <div style="width:28px; height:28px; background:#059669; border-radius:50%; color:white; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">6</div>
+          <div><strong style="font-size:13px;">Ananya completes C2 selfie.</strong><p style="font-size:13px; color:#6b7280; margin-top:3px;">TrueHire downloads C1 selfie + new selfie. Runs face match (1:1): 94.2% match → MATCH. Runs face search (1:N): no other candidate matches. No duplicate. Dashboard: C2 <span class="verdict verdict-pass">PASS</span></p></div>
+        </div>
+
+        <div style="display:flex; gap:14px; padding: 14px 0; border-bottom:1px solid #f3f4f6;">
+          <div style="width:28px; height:28px; background:#d97706; border-radius:50%; color:white; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">7</div>
+          <div><strong style="font-size:13px;">Interview done. Recruiter sends C3 link.</strong><p style="font-size:13px; color:#6b7280; margin-top:3px;">Before issuing offer. Same process as C2. Ananya completes in 30 seconds. C3: <span class="verdict verdict-pass">PASS</span></p></div>
+        </div>
+
+        <div style="display:flex; gap:14px; padding: 14px 0;">
+          <div style="width:28px; height:28px; background:#166534; border-radius:50%; color:white; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">8</div>
+          <div><strong style="font-size:13px;">Offer sent. PDF downloaded.</strong><p style="font-size:13px; color:#6b7280; margin-top:3px;">Recruiter downloads the full verification report. All 3 checkpoints passed. Report goes on file. Offer letter issued with confidence.</p></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="footer no-print">
+  TrueHire · Product Architecture Document · © 2026 ThoughtsON Technologies · Confidential
+</div>
+
+</body>
+</html>

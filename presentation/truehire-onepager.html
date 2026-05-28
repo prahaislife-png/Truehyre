@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TrueHire — One Pager</title>
+<style>
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display: none; }
+    @page { margin: 0; size: A4; }
+    body { margin: 0; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f8f9fa; color: #1a202c; }
+  .page { max-width: 860px; margin: 0 auto; background: #fff; min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, #0d1b2a 0%, #1a3a5c 100%); padding: 40px 50px 32px; color: white; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .logo { font-size: 36px; font-weight: 900; letter-spacing: -1px; }
+  .logo span { color: #4a90e2; }
+  .tagline { font-size: 14px; color: #7ec8f5; font-weight: 400; margin-top: 4px; letter-spacing: 1px; }
+  .company-tag { font-size: 11px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; color: rgba(255,255,255,0.7); }
+  .header-sub { font-size: 16px; color: rgba(255,255,255,0.7); line-height: 1.5; max-width: 600px; margin-top: 8px; }
+
+  .body { padding: 36px 50px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #4a90e2; margin-bottom: 12px; border-bottom: 2px solid #4a90e2; padding-bottom: 6px; }
+  .section p { font-size: 13.5px; color: #374151; line-height: 1.65; }
+
+  .stat-row { display: flex; gap: 12px; margin-bottom: 20px; }
+  .stat { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; text-align: center; }
+  .stat .n { font-size: 28px; font-weight: 900; color: #1a202c; letter-spacing: -1px; }
+  .stat .n.red   { color: #dc2626; }
+  .stat .n.blue  { color: #2563eb; }
+  .stat .n.green { color: #059669; }
+  .stat .l { font-size: 11px; color: #6b7280; margin-top: 4px; line-height: 1.3; }
+  .stat .src { font-size: 9px; color: #9ca3af; margin-top: 4px; font-style: italic; }
+
+  .checkpoint { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+  .cp { padding: 18px 16px; border-right: 1px solid #e2e8f0; }
+  .cp:last-child { border-right: none; }
+  .cp.c2 { background: #fffbeb; }
+  .cp-badge { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 20px; padding: 2px 10px; margin-bottom: 8px; }
+  .c1 .cp-badge { background: #dbeafe; color: #1d4ed8; }
+  .c2 .cp-badge { background: #fef3c7; color: #92400e; }
+  .c3 .cp-badge { background: #d1fae5; color: #065f46; }
+  .cp-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .cp-when  { font-size: 10px; color: #6b7280; margin-bottom: 8px; }
+  .cp-desc  { font-size: 11.5px; color: #4b5563; line-height: 1.4; }
+  .cp-killer { margin-top: 8px; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; }
+  .c1 .cp-killer { background: #dbeafe; color: #1d4ed8; }
+  .c2 .cp-killer { background: #fef3c7; color: #92400e; }
+  .c3 .cp-killer { background: #d1fae5; color: #065f46; }
+
+  .economics { background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .econ-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+  .econ-row:last-child { border-bottom: none; font-weight: 700; font-size: 14px; }
+  .econ-row .label { color: #374151; }
+  .econ-row .cost  { color: #6b7280; }
+  .econ-row .price { font-weight: 700; color: #2563eb; }
+  .econ-row .margin { font-weight: 700; color: #059669; }
+
+  ul.list { list-style: none; padding: 0; }
+  ul.list li { font-size: 13px; color: #374151; padding: 5px 0; padding-left: 18px; position: relative; line-height: 1.5; }
+  ul.list li::before { content: '→'; position: absolute; left: 0; color: #4a90e2; font-weight: 700; }
+
+  .ask-box { background: linear-gradient(135deg, #1e3a5f, #0d1b2a); color: white; border-radius: 12px; padding: 24px; }
+  .ask-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #7ec8f5; }
+  .ask-box ol { padding-left: 20px; }
+  .ask-box ol li { font-size: 13px; color: rgba(255,255,255,0.8); margin-bottom: 8px; line-height: 1.5; }
+  .ask-box .signal { margin-top: 12px; background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #34d399; }
+
+  .footer { background: #0d1b2a; padding: 16px 50px; display: flex; justify-content: space-between; align-items: center; }
+  .footer p { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  .print-btn { position: fixed; top: 20px; right: 20px; background: #2563eb; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">Print / Save PDF</button>
+
+<div class="page">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="logo">True<span>Hire</span></div>
+        <div class="tagline">Verified Talent. Zero Doubt.</div>
+      </div>
+      <div class="company-tag">ThoughtsON Technologies — May 2026</div>
+    </div>
+    <p class="header-sub">Identity and fraud verification for hiring. Proves the person you interview is the real, government-ID-verified person — at submission, at the interview, and at offer. Built for global and remote hiring.</p>
+  </div>
+
+  <div class="body">
+
+    <!-- The problem -->
+    <div class="stat-row">
+      <div class="stat">
+        <div class="n red">1 in 4</div>
+        <div class="l">Candidate profiles will be fake by 2028</div>
+        <div class="src">Gartner, 2024</div>
+      </div>
+      <div class="stat">
+        <div class="n red">70 min</div>
+        <div class="l">To build a deepfake candidate that passes a video interview</div>
+        <div class="src">Palo Alto Networks</div>
+      </div>
+      <div class="stat">
+        <div class="n red">~60%</div>
+        <div class="l">Of deepfake fraud targets IT and tech roles — exactly what we place</div>
+        <div class="src">Industry analysis</div>
+      </div>
+      <div class="stat">
+        <div class="n blue">₹0</div>
+        <div class="l">Cost of a pilot — 500 free verifications/month included</div>
+        <div class="src">Didit free tier</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Left col -->
+      <div>
+        <div class="section">
+          <div class="section-title">The problem</div>
+          <p>Proxy interviewees, real-time deepfake video, stolen and synthetic identities — these are live attacks hitting remote tech hiring right now. A convincing fake can be created in 70 minutes with a $20 tool.</p>
+          <br/>
+          <p>For a staffing firm, one confirmed fake placement can end a client relationship. Fraudulent hires in IT roles have installed malware on day one. The liability sits with whoever placed them.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">What TrueHire is — and isn't</div>
+          <p><strong>Is:</strong> a candidate identity and fraud verification product built for staffing. Three checkpoints across the hiring journey. Results in 2 minutes. Works in 220+ countries.</p>
+          <br/>
+          <p><strong>Is not:</strong> a traditional background check. No employment history, education verification, or court records in v1. We stay narrowly on the identity/anti-deepfake/AML layer where the pain is hottest and the incumbent solutions are weakest.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Why ThoughtsON wins</div>
+          <ul class="list">
+            <li>15 years, 70+ active clients — no new sales motion required</li>
+            <li>Existing trust relationships = fastest route to paid pilots</li>
+            <li>Staffing + RPO + Web3 + IT — exactly where the fraud is concentrated</li>
+            <li>Add-on to every submission OR standalone service for any company</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Right col -->
+      <div>
+        <div class="section">
+          <div class="section-title">How it works — recruiter view</div>
+          <ul class="list">
+            <li><strong>Add candidate</strong> — name, email, role, client (30 seconds)</li>
+            <li><strong>Send link</strong> — via email, WhatsApp, or copy (one click)</li>
+            <li><strong>Candidate verifies</strong> — ID + selfie on their phone (~2 min, no app)</li>
+            <li><strong>See result</strong> — Pass / Review / Fail + compliance PDF (automatic)</li>
+            <li><strong>Before interview</strong> — one click sends C2 re-check link to candidate</li>
+            <li><strong>Result</strong> — MATCH / NO MATCH / DUPLICATE FACE before the call starts</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Competitive position</div>
+          <ul class="list">
+            <li><strong>vs AuthBridge / IDfy:</strong> enterprise-only, no interview-stage check, no deepfake detection</li>
+            <li><strong>vs LinkedIn Verifications:</strong> employment only, no biometrics, no anti-deepfake</li>
+            <li><strong>vs manual process:</strong> no verification at all — legal exposure with zero audit trail</li>
+            <li><strong>TrueHire only:</strong> 3-checkpoint, interview anti-deepfake, duplicate face detection, self-serve pricing</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 checkpoints -->
+    <div class="section">
+      <div class="section-title">The 3-checkpoint flow</div>
+      <div class="checkpoint">
+        <div class="cp c1">
+          <span class="cp-badge">C1</span>
+          <div class="cp-title">Submission Check</div>
+          <div class="cp-when">At candidate submission</div>
+          <div class="cp-desc">Government ID + live selfie. Establishes a trusted identity baseline stored against the candidate record.</div>
+          <div class="cp-killer">Verify once — reuse across all future client submissions.</div>
+        </div>
+        <div class="cp c2">
+          <span class="cp-badge">C2 ★ KEY</span>
+          <div class="cp-title">Interview Check</div>
+          <div class="cp-when">Just before the live interview</div>
+          <div class="cp-desc">Active liveness + face match vs C1 + pool search for duplicate identities. iBeta PAD L1 certified — deepfake-resistant.</div>
+          <div class="cp-killer">This is what kills proxies and real-time deepfakes.</div>
+        </div>
+        <div class="cp c3">
+          <span class="cp-badge">C3</span>
+          <div class="cp-title">Offer Check</div>
+          <div class="cp-when">At offer acceptance</div>
+          <div class="cp-desc">Final biometric re-confirmation. Proves the person accepting the role is the same one who interviewed.</div>
+          <div class="cp-killer">Clean audit trail — documented reasonable verification.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Economics -->
+    <div class="section">
+      <div class="section-title">Unit economics</div>
+      <div class="economics">
+        <div class="econ-row">
+          <span class="label">C1 only (submission check)</span>
+          <span class="cost">Cost ~₹28–45</span>
+          <span class="price">Sell ₹149</span>
+          <span class="margin">3–4× margin</span>
+        </div>
+        <div class="econ-row">
+          <span class="label">C1 + AML (sensitive / BFSI roles)</span>
+          <span class="cost">Cost ~₹45–65</span>
+          <span class="price">Sell ₹249</span>
+          <span class="margin">4–5× margin</span>
+        </div>
+        <div class="econ-row" style="background:#f0f9ff; padding:10px 8px; border-radius:8px;">
+          <span class="label"><strong>Full 3-checkpoint (C1+C2+C3)</strong></span>
+          <span class="cost">Cost ~₹50–60</span>
+          <span class="price">Sell ₹499</span>
+          <span class="margin">8–10× margin</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Validation ask -->
+    <div class="ask-box">
+      <h3>The one thing to do before full build</h3>
+      <ol>
+        <li>Pick 3 existing clients hiring for remote / tech roles. Schedule 15-minute calls this week.</li>
+        <li>Ask: <em>"Have you had a candidate turn out not to be who they claimed?"</em> — then <em>"What would you pay per candidate for a 2-minute check that guarantees the interviewee is real?"</em></li>
+        <li>If 2 of 3 give a number or agree to a pilot → full green light.</li>
+      </ol>
+      <div class="signal">Green light signal: a number, a pilot commitment, or "send me pricing." Anything else is not a signal — it's politeness.</div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>TrueHire by ThoughtsON Technologies · Confidential · May 2026</p>
+    <p>truehyre.vercel.app</p>
+  </div>
+</div>
+
+</body>
+</html>

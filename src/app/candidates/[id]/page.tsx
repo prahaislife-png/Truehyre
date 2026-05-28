@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
+import { requireOrg } from '@/lib/requireOrg'
 import StatusBadge from '@/components/StatusBadge'
 import CheckpointTimeline from '@/components/CheckpointTimeline'
 import CheckpointActions from '@/components/CheckpointActions'
@@ -16,6 +17,8 @@ export default async function CandidateDetailPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
+
+  await requireOrg(supabase, user.id)
 
   const [{ data: candidate }, { data: allVerifications }, { data: auditEntries }] =
     await Promise.all([

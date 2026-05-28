@@ -8,6 +8,7 @@ import {
   fetchImageBuffer,
   getDecision,
 } from '@/lib/didit/client'
+import { sendVerificationResult } from '@/lib/email/sendVerificationResult'
 import type { CandidateStatus, DiditDecision } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -245,6 +246,32 @@ export async function POST(request: NextRequest) {
       await service.from('candidates')
         .update({ overall_status: internalStatus })
         .eq('id', verification.candidate_id)
+
+      // Email recruiter on terminal status
+      if (isTerminal) {
+        const { data: candidate } = await service
+          .from('candidates')
+          .select('full_name, recruiter_id')
+          .eq('id', verification.candidate_id)
+          .single()
+        if (candidate) {
+          const { data: recruiter } = await service
+            .from('users')
+            .select('email')
+            .eq('id', candidate.recruiter_id)
+            .single()
+          if (recruiter?.email) {
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL!
+            await sendVerificationResult({
+              to: recruiter.email,
+              candidateName: candidate.full_name,
+              status: internalStatus,
+              checkpoint: verification.checkpoint,
+              profileUrl: `${appUrl}/candidates/${verification.candidate_id}`,
+            })
+          }
+        }
+      }
 
       // Post-processing on approval
       if (internalStatus === 'approved' && decision) {

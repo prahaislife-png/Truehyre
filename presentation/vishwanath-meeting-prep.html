@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TrueHire — Vishwanath Meeting Prep</title>
+<style>
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display: none; }
+    @page { margin: 20mm; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; color: #1a202c; padding: 30px; }
+  .container { max-width: 860px; margin: 0 auto; }
+  .card { background: white; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+  .card.red-border   { border-left: 4px solid #dc2626; }
+  .card.blue-border  { border-left: 4px solid #2563eb; }
+  .card.green-border { border-left: 4px solid #059669; }
+  .card.amber-border { border-left: 4px solid #d97706; }
+  .card.dark { background: #0d1b2a; color: white; border: none; }
+
+  h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; }
+  h1 span { color: #2563eb; }
+  h2 { font-size: 16px; font-weight: 800; margin-bottom: 14px; letter-spacing: -0.3px; }
+  .eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #6b7280; margin-bottom: 6px; }
+  .eyebrow.blue  { color: #2563eb; }
+  .eyebrow.red   { color: #dc2626; }
+  .eyebrow.green { color: #059669; }
+  .eyebrow.amber { color: #d97706; }
+
+  p { font-size: 14px; color: #374151; line-height: 1.65; }
+  p + p { margin-top: 10px; }
+
+  .q { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+  .q-text { font-size: 15px; font-weight: 600; color: #1a202c; margin-bottom: 8px; font-style: italic; }
+  .q-listen { font-size: 12px; color: #6b7280; }
+  .q-listen strong { color: #059669; }
+  .q-warn { font-size: 12px; color: #dc2626; margin-top: 4px; }
+
+  .objection { background: #fff7f7; border: 1px solid #fecaca; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; }
+  .obj-q { font-size: 13px; font-weight: 700; color: #991b1b; margin-bottom: 6px; }
+  .obj-a { font-size: 13px; color: #374151; line-height: 1.5; }
+  .obj-a strong { color: #1a202c; }
+
+  .checklist { list-style: none; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: #374151; padding: 7px 0; border-bottom: 1px solid #f1f5f9; }
+  .checklist li:last-child { border-bottom: none; }
+  .box { width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+
+  .goal-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px 20px; margin-top: 16px; }
+  .goal-box p { color: #166534; font-size: 14px; font-weight: 600; }
+
+  .signal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+  .signal-card { border-radius: 10px; padding: 14px 16px; }
+  .signal-card.good { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .signal-card.bad  { background: #fff7f7; border: 1px solid #fecaca; }
+  .signal-card h4 { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .signal-card.good h4 { color: #166534; }
+  .signal-card.bad  h4 { color: #991b1b; }
+  .signal-card ul { list-style: none; }
+  .signal-card ul li { font-size: 12px; color: #374151; margin-bottom: 5px; padding-left: 14px; position: relative; }
+  .signal-card ul li::before { position: absolute; left: 0; font-weight: 700; }
+  .signal-card.good ul li::before { content: '✓'; color: #059669; }
+  .signal-card.bad  ul li::before { content: '✗'; color: #dc2626; }
+
+  .divider { height: 1px; background: #e2e8f0; margin: 8px 0 16px; }
+  .tag { display: inline-block; background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 700; border-radius: 20px; padding: 3px 10px; margin: 3px 3px 0 0; }
+  .tag.green { background: #d1fae5; color: #065f46; }
+  .tag.red   { background: #fee2e2; color: #991b1b; }
+  .tag.amber { background: #fef3c7; color: #92400e; }
+
+  .print-btn { position: fixed; top: 20px; right: 20px; background: #2563eb; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">Print / Save PDF</button>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="card dark" style="margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:6px;">Meeting Prep — Govind → Vishwanath</div>
+        <h1 style="color:white; font-size:26px;">True<span style="color:#4a90e2;">Hire</span> — Meeting Brief</h1>
+        <p style="color:rgba(255,255,255,0.6); font-size:13px; margin-top:6px;">What to cover, how to present it, what signals to watch for</p>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:12px; color:rgba(255,255,255,0.4);">May 2026</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:4px;">ThoughtsON Technologies</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The goal -->
+  <div class="card blue-border">
+    <div class="eyebrow blue">Your goal for this meeting</div>
+    <h2>You are NOT pitching. You are validating.</h2>
+    <p>The product is built. Govind has done the tech work. Your job today is to understand if Vishwanath <strong>sees the pain</strong>, understands the product, and is willing to take it to 3 clients for a conversation. You need one answer: <strong>"Yes, I'll run those 3 client calls this week."</strong></p>
+    <div class="goal-box">
+      <p>✓ Meeting success = Vishwanath commits to talking to 3 clients and reporting back with their reaction within 7 days.</p>
+    </div>
+  </div>
+
+  <!-- What to show -->
+  <div class="card green-border">
+    <div class="eyebrow green">What to show him (in order)</div>
+    <h2>Run the pitch deck. Keep it under 25 minutes.</h2>
+    <ul class="checklist">
+      <li><div class="box"></div><strong>Slides 1–4 (10 min):</strong> The problem. Ask him: "Have you seen this with your clients?" Let him talk. Don't rush past this — his answer tells you everything.</li>
+      <li><div class="box"></div><strong>Slides 5–8 (8 min):</strong> What TrueHire does. Show the live product at truehyre.vercel.app — log in, show the dashboard, show a candidate report. Real demo beats slides.</li>
+      <li><div class="box"></div><strong>Slides 9–11 (5 min):</strong> Market, competitive gap, unit economics. Keep it short — he's a sales person, he cares about the pitch to clients, not the TAM math.</li>
+      <li><div class="box"></div><strong>Slide 14 (5 min):</strong> The ask. Three client calls. That's it.</li>
+    </ul>
+  </div>
+
+  <!-- The 5 questions to ask -->
+  <div class="card amber-border">
+    <div class="eyebrow amber">The 5 questions — ask these, then shut up</div>
+    <h2>Ask about reality. Not hypotheticals.</h2>
+    <p style="margin-bottom:16px; font-size:13px; color:#6b7280;">"Would you use this?" gets polite lies. "What happened last time?" gets truth.</p>
+
+    <div class="q">
+      <div class="q-text">"In the last year — have you been burned by a candidate who wasn't who they claimed? A proxy, a fake profile, someone who couldn't do the job they interviewed for?"</div>
+      <div class="q-listen"><strong>Good signal:</strong> a specific story, a number, a name. Real pain.</div>
+      <div class="q-warn">No signal: "not really" / vague. This client may not be your buyer — note it and move on to the next one.</div>
+    </div>
+
+    <div class="q">
+      <div class="q-text">"Walk me through how you verify a candidate is real today. Who does it, how long does it take, what does it cost?"</div>
+      <div class="q-listen"><strong>Listen for:</strong> manual effort, "we just check LinkedIn," no process at all. The worse their current process, the bigger your opening.</div>
+    </div>
+
+    <div class="q">
+      <div class="q-text">"What happens if a fake or fraudulent hire gets through to one of your clients?"</div>
+      <div class="q-listen"><strong>Listen for:</strong> "we'd lose the client," "compliance nightmare," "security incident." The more serious the stated consequence, the higher they'll pay.</div>
+    </div>
+
+    <div class="q" style="background:#f0fdf4; border-color:#bbf7d0;">
+      <div class="q-text" style="color:#166534;">"If there was a 2-minute check that guaranteed the interviewee is the real, verified person — works globally — what would it be worth per candidate? Would you run a paid pilot on your next 50 hires?"</div>
+      <div class="q-listen"><strong>THIS IS THE ONE THAT MATTERS.</strong></div>
+      <div class="q-listen"><strong>Good signal:</strong> a number, "yes to pilot," "send me pricing." → This is a buyer.</div>
+      <div class="q-warn">Soft: "depends" / "interesting idea" / "send me info." This is not a buyer yet.</div>
+    </div>
+
+    <div class="q">
+      <div class="q-text">"If you wanted this, who signs off on the purchase, and how does it need to plug into your hiring process?"</div>
+      <div class="q-listen"><strong>Listen for:</strong> the actual decision-maker and integration requirements. Shapes what gets built next.</div>
+    </div>
+  </div>
+
+  <!-- Objection handling -->
+  <div class="card red-border">
+    <div class="eyebrow red">Objections he will raise — your answers</div>
+    <h2>Be ready for these. Don't get caught flat.</h2>
+
+    <div class="objection">
+      <div class="obj-q">"Why would candidates agree to this? It adds friction."</div>
+      <div class="obj-a">It's 2 minutes on their phone — no app, no account. Candidates already do background checks. This is faster and less invasive than a police verification. And for a competitive role, they want to prove they're real — it's actually a differentiator for <em>them</em>.</div>
+    </div>
+
+    <div class="objection">
+      <div class="obj-q">"We already do background verification with [AuthBridge / OnGrid / etc.]"</div>
+      <div class="obj-a"><strong>Traditional BGV tells you who someone was — not whether the person on your video call is that person today.</strong> It doesn't run at the interview. It doesn't detect deepfakes or proxies. TrueHire is the layer that incumbents don't have.</div>
+    </div>
+
+    <div class="objection">
+      <div class="obj-q">"This sounds expensive / complicated to set up."</div>
+      <div class="obj-a">The recruiter sends a link. That's it. The candidate does everything on their phone. There's nothing to set up — we give you a login and you're live in minutes. First 500 verifications cost nothing. Pricing is per-candidate — no contract, no commitment.</div>
+    </div>
+
+    <div class="objection">
+      <div class="obj-q">"What about DPDP / data privacy?"</div>
+      <div class="obj-a">Candidates give explicit consent before the check starts. Didit is enterprise-grade (the same infrastructure banks use). Data minimization is built in — we don't store more than needed. This is actually <em>better</em> for compliance than an unverified manual process with no audit trail.</div>
+    </div>
+
+    <div class="objection">
+      <div class="obj-q">"What if a client's IT system doesn't allow links / needs integration?"</div>
+      <div class="obj-a">It's a URL. Works on any device, any browser, no integration needed for v1. If a client needs ATS integration, that's a Phase 2 feature — and we'll build it when they name their ATS.</div>
+    </div>
+  </div>
+
+  <!-- Signals scorecard -->
+  <div class="card">
+    <div class="eyebrow">Signals scorecard — after the 3 client calls</div>
+    <h2>How to read what clients tell you</h2>
+    <div class="signal-row">
+      <div class="signal-card good">
+        <h4>✓ Green light signals</h4>
+        <ul>
+          <li>Specific fraud story (a case, a number)</li>
+          <li>Gives a price range: "I'd pay ₹X"</li>
+          <li>Commits to a pilot: "yes, let's do 50"</li>
+          <li>Asks "when can we start?"</li>
+          <li>Wants to introduce you to their TA head</li>
+          <li>Mentions a specific budget or procurement process</li>
+        </ul>
+      </div>
+      <div class="signal-card bad">
+        <h4>✗ Not a signal — ignore</h4>
+        <ul>
+          <li>"Interesting idea!" (no commitment)</li>
+          <li>"Send me more information"</li>
+          <li>"Depends on pricing" (without giving a range)</li>
+          <li>"We'll think about it"</li>
+          <li>"Not really an issue for us" (wrong segment)</li>
+          <li>Enthusiastic but asks nothing specific</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:13px; margin-bottom:8px;"><strong>Score your 3 calls:</strong></p>
+    <p style="font-size:13px; color:#374151; line-height:1.6;">
+      <strong>2+ green light signals</strong> → Build it. Full productize and launch. <span class="tag green">Greenlight</span><br/>
+      <strong>Strong pain but no money signal</strong> → Problem is real, buyer isn't urgent yet. Narrow target — who has it worst? Try BFSI/fintech clients. <span class="tag amber">Refine</span><br/>
+      <strong>No real pain stories at all</strong> → Wrong segment. Pivot to clients hiring specifically for remote/global/Web3/IT roles. <span class="tag red">Pivot segment</span>
+    </p>
+  </div>
+
+  <!-- The ask -->
+  <div class="card dark">
+    <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:12px;">What you're asking Vishwanath for today</div>
+    <h2 style="color:white; font-size:20px; margin-bottom:16px;">One commitment. Three calls. Seven days.</h2>
+    <p style="color:rgba(255,255,255,0.7); font-size:14px; line-height:1.6; margin-bottom:16px;">You don't need him to commit to the product, the pricing, or the go-to-market plan today. You need one thing: <strong style="color:#7ec8f5;">agree to take this concept to 3 existing clients this week and report back what they said.</strong></p>
+    <div style="background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.3); border-radius:10px; padding:14px 18px;">
+      <p style="color:#34d399; font-size:14px; font-weight:600;">The one-line ask to send each client after the meeting:</p>
+      <p style="color:rgba(255,255,255,0.8); font-size:13px; margin-top:8px; font-style:italic;">"We're piloting a 2-minute identity check that proves your interviewee is the real, verified person — built for remote and global hiring. Can I get 15 minutes to ask how you handle this today?"</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

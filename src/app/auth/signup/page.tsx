@@ -1,26 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import AuthLayout from '@/components/AuthLayout'
+import { useSearchParams } from 'next/navigation'
 
-export default function SignupPage() {
+function SignupForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const inviteToken = searchParams.get('invite')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    const callbackUrl = inviteToken
+      ? `${window.location.origin}/auth/callback?invite=${inviteToken}`
+      : `${window.location.origin}/auth/callback`
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: callbackUrl },
     })
     if (error) {
       setError(error.message)
@@ -123,5 +129,13 @@ export default function SignupPage() {
         </p>
       </div>
     </AuthLayout>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   )
 }
