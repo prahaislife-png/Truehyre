@@ -110,7 +110,7 @@ export default async function CandidateDetailPage({
                 candidateId={id}
                 candidateName={candidate.full_name}
                 candidateEmail={candidate.email}
-                checkpoint={v.checkpoint}
+                checkpoint={v.checkpoint ?? 'C1'}
               />
             ))}
           </div>

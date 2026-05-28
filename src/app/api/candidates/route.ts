@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     sessionData = await createSession({
       workflow_id: workflowId,
       vendor_data: candidate.id,
-      callback: `${appUrl}/api/webhooks/didit`,
+      callback: `${appUrl}/verify/complete`,
     })
   } catch (err) {
     await service.from('candidates').delete().eq('id', candidate.id)

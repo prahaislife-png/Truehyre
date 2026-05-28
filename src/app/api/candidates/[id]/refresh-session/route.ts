@@ -49,7 +49,7 @@ export async function POST(
     sessionData = await createSession({
       workflow_id: workflowId,
       vendor_data: id,
-      callback: `${appUrl}/api/webhooks/didit`,
+      callback: `${appUrl}/verify/complete`,
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Didit session creation failed'

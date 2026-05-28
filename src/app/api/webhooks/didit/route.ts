@@ -13,6 +13,15 @@ import type { CandidateStatus, DiditDecision } from '@/lib/types'
 
 export const runtime = 'nodejs'
 
+// Didit redirects the candidate's browser here after verification completes.
+// Redirect them to the proper thank-you page instead of returning 405.
+export function GET() {
+  return NextResponse.redirect(
+    new URL('/verify/complete', process.env.NEXT_PUBLIC_APP_URL!),
+    { status: 302 }
+  )
+}
+
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize)
   if (value !== null && typeof value === 'object') {
