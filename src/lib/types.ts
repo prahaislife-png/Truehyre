@@ -45,7 +45,7 @@ export interface Candidate {
 export interface Verification {
   id: string
   candidate_id: string
-  checkpoint: 'C1'
+  checkpoint: 'C1' | 'C2' | 'C3'
   didit_session_id: string
   workflow_id: string
   status: CandidateStatus
@@ -53,6 +53,9 @@ export interface Verification {
   face_match_score: number | null
   liveness_score: number | null
   aml_hits: number | null
+  reference_image_url: string | null
+  duplicate_face_flag: boolean
+  duplicate_candidate_id: string | null
   created_at: string
   completed_at: string | null
 }

@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import StatusBadge from '@/components/StatusBadge'
+import CheckpointTimeline from '@/components/CheckpointTimeline'
+import CheckpointActions from '@/components/CheckpointActions'
 import type { CandidateStatus, Verification } from '@/lib/types'
 import Link from 'next/link'
 
@@ -14,17 +16,23 @@ export default async function CandidateDetailPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [{ data: candidate }, { data: verification }, { data: auditEntries }] =
+  const [{ data: candidate }, { data: allVerifications }, { data: auditEntries }] =
     await Promise.all([
       supabase.from('candidates').select('*, clients(name)').eq('id', id).single(),
-      supabase.from('verifications').select('*').eq('candidate_id', id).order('created_at', { ascending: false }).limit(1).single(),
+      supabase.from('verifications').select('*').eq('candidate_id', id).order('created_at', { ascending: false }),
       supabase.from('audit_log').select('*').eq('candidate_id', id).order('created_at', { ascending: false }),
     ])
 
   if (!candidate) notFound()
 
-  const v = verification as Verification | null
-  const decision = v?.decision_json
+  const verifications = (allVerifications ?? []) as Verification[]
+  // Most recent per checkpoint
+  const c1 = verifications.find(v => v.checkpoint === 'C1') ?? null
+  const c2 = verifications.find(v => v.checkpoint === 'C2') ?? null
+  const c3 = verifications.find(v => v.checkpoint === 'C3') ?? null
+
+  // C1 details for the identity sections
+  const c1Decision = c1?.decision_json ?? null
 
   return (
     <div className="min-h-screen">
@@ -50,21 +58,12 @@ export default async function CandidateDetailPage({
                 <p className="text-sm text-gray-600 mt-1">Role: {candidate.role_applied}</p>
               )}
               {candidate.clients && (
-                <p className="text-sm text-gray-600">Client: {candidate.clients.name}</p>
+                <p className="text-sm text-gray-600">Client: {(candidate.clients as { name: string }).name}</p>
               )}
             </div>
             <StatusBadge status={candidate.overall_status as CandidateStatus} />
           </div>
-          {v && (
-            <div className="mt-4 flex gap-4">
-              {v.liveness_score != null && (
-                <Score label="Liveness" value={Math.round(v.liveness_score * 100)} />
-              )}
-              {v.face_match_score != null && (
-                <Score label="Face match" value={Math.round(v.face_match_score * 100)} />
-              )}
-            </div>
-          )}
+
           {candidate.didit_session_id && (
             <div className="mt-4">
               <a
@@ -80,10 +79,31 @@ export default async function CandidateDetailPage({
           )}
         </div>
 
-        {/* ID verification */}
-        {decision?.id_verifications && decision.id_verifications.length > 0 && (
-          <Section title="ID Verification">
-            {decision.id_verifications.map((iv, i) => (
+        {/* Verification timeline */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Verification checkpoints</h3>
+          </div>
+          <CheckpointTimeline c1={c1} c2={c2} c3={c3} />
+
+          {/* Checkpoint action buttons */}
+          {c1?.status === 'approved' && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <p className="text-xs text-gray-500 mb-2 font-medium">Trigger re-check</p>
+              <CheckpointActions
+                candidateId={id}
+                c1Approved={c1.status === 'approved'}
+                c2Status={c2?.status ?? null}
+                c3Status={c3?.status ?? null}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* C1 ID verification details */}
+        {c1Decision?.id_verifications && c1Decision.id_verifications.length > 0 && (
+          <Section title="C1 — ID Verification">
+            {c1Decision.id_verifications.map((iv, i) => (
               <div key={i} className="grid grid-cols-2 gap-3 text-sm">
                 <Field label="Name" value={iv.name} />
                 <Field label="Document type" value={iv.document_type} />
@@ -106,10 +126,10 @@ export default async function CandidateDetailPage({
           </Section>
         )}
 
-        {/* Liveness */}
-        {decision?.liveness_checks && decision.liveness_checks.length > 0 && (
-          <Section title="Liveness">
-            {decision.liveness_checks.map((lc, i) => (
+        {/* C1 Liveness */}
+        {c1Decision?.liveness_checks && c1Decision.liveness_checks.length > 0 && (
+          <Section title="C1 — Liveness">
+            {c1Decision.liveness_checks.map((lc, i) => (
               <div key={i} className="grid grid-cols-3 gap-3 text-sm">
                 <Field label="Status" value={lc.status} />
                 <Field label="Score" value={`${Math.round(lc.score * 100)}%`} />
@@ -119,31 +139,10 @@ export default async function CandidateDetailPage({
           </Section>
         )}
 
-        {/* Face match */}
-        {decision?.face_matches && decision.face_matches.length > 0 && (
-          <Section title="Face Match">
-            {decision.face_matches.map((fm, i) => (
-              <div key={i} className="text-sm space-y-2">
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Status" value={fm.status} />
-                  <Field label="Score" value={`${fm.score}%`} />
-                </div>
-                {fm.warnings && fm.warnings.length > 0 && (
-                  <ul className="space-y-0.5">
-                    {fm.warnings.map((w, j) => (
-                      <li key={j} className="text-xs text-yellow-700 bg-yellow-50 rounded px-2 py-1">{w}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </Section>
-        )}
-
         {/* IP Analysis */}
-        {decision?.ip_analyses && decision.ip_analyses.length > 0 && (
+        {c1Decision?.ip_analyses && c1Decision.ip_analyses.length > 0 && (
           <Section title="IP Analysis">
-            {decision.ip_analyses.map((ip, i) => (
+            {c1Decision.ip_analyses.map((ip, i) => (
               <div key={i} className="grid grid-cols-2 gap-3 text-sm">
                 <Field label="VPN" value={ip.vpn ? 'Yes' : 'No'} warn={ip.vpn} />
                 <Field label="Proxy" value={ip.proxy ? 'Yes' : 'No'} warn={ip.proxy} />
@@ -156,9 +155,9 @@ export default async function CandidateDetailPage({
         )}
 
         {/* AML */}
-        {candidate.aml_enabled && decision?.aml_screenings && decision.aml_screenings.length > 0 && (
+        {candidate.aml_enabled && c1Decision?.aml_screenings && c1Decision.aml_screenings.length > 0 && (
           <Section title="AML Screening">
-            {decision.aml_screenings.map((aml, i) => (
+            {c1Decision.aml_screenings.map((aml, i) => (
               <div key={i} className="text-sm space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Status" value={aml.status} />
@@ -213,16 +212,6 @@ function Field({ label, value, warn }: { label: string; value?: string | null; w
     <div>
       <p className="text-xs text-gray-500">{label}</p>
       <p className={`font-medium ${warn ? 'text-red-600' : 'text-gray-900'}`}>{value ?? '—'}</p>
-    </div>
-  )
-}
-
-function Score({ label, value }: { label: string; value: number }) {
-  const color = value >= 70 ? 'text-green-700' : value >= 50 ? 'text-yellow-700' : 'text-red-600'
-  return (
-    <div className="bg-gray-50 rounded-lg px-4 py-2 text-center">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className={`text-xl font-semibold ${color}`}>{value}%</p>
     </div>
   )
 }
