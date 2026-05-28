@@ -29,7 +29,8 @@ function LoginForm() {
       if (inviteToken) {
         router.push(`/invite/${inviteToken}`)
       } else {
-        router.push(nextPath ?? '/dashboard')
+        const dest = nextPath && nextPath !== '/' ? nextPath : '/dashboard'
+        router.push(dest)
       }
       router.refresh()
     }
