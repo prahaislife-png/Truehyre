@@ -25,14 +25,18 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth')
-  const isConsentRoute = request.nextUrl.pathname.startsWith('/consent')
-  const isWebhook = request.nextUrl.pathname.startsWith('/api/webhooks')
-  const isVerifyRoute = request.nextUrl.pathname.startsWith('/verify')
+  const { pathname } = request.nextUrl
 
-  const isCallback = request.nextUrl.pathname === '/auth/callback'
+  const isAuthRoute = pathname.startsWith('/auth')
+  const isConsentRoute = pathname.startsWith('/consent')
+  const isWebhook = pathname.startsWith('/api/webhooks')
+  const isVerifyRoute = pathname.startsWith('/verify')
+  const isInviteRoute = pathname.startsWith('/invite')
+  const isMarketingRoot = pathname === '/'
 
-  if (isWebhook || isConsentRoute || isCallback || isVerifyRoute) return supabaseResponse
+  const isCallback = pathname === '/auth/callback'
+
+  if (isWebhook || isConsentRoute || isCallback || isVerifyRoute || isInviteRoute || isMarketingRoot) return supabaseResponse
 
   if (!user && !isAuthRoute) {
     const loginUrl = new URL('/auth/login', request.url)
