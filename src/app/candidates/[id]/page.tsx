@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import StatusBadge from '@/components/StatusBadge'
 import CheckpointTimeline from '@/components/CheckpointTimeline'
 import CheckpointActions from '@/components/CheckpointActions'
+import SendLinkBox from '@/components/SendLinkBox'
 import type { CandidateStatus, Verification } from '@/lib/types'
 import Link from 'next/link'
 
@@ -85,6 +86,25 @@ export default async function CandidateDetailPage({
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Verification checkpoints</h3>
           </div>
           <CheckpointTimeline c1={c1} c2={c2} c3={c3} />
+
+          {/* Show send-link box for any checkpoint that has a URL but isn't done */}
+          <div className="mt-4 space-y-3">
+            {[c1, c2, c3].filter(
+              (v): v is Verification =>
+                !!v &&
+                !!v.session_url &&
+                !['approved', 'declined'].includes(v.status)
+            ).map(v => (
+              <SendLinkBox
+                key={v.id}
+                sessionUrl={v.session_url!}
+                candidateId={id}
+                candidateName={candidate.full_name}
+                candidateEmail={candidate.email}
+                checkpoint={v.checkpoint}
+              />
+            ))}
+          </div>
 
           {/* Checkpoint action buttons */}
           {c1?.status === 'approved' && (

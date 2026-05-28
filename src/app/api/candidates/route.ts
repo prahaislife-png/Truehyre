@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
     candidate_id: candidate.id,
     didit_session_id: sessionData.session_id,
     workflow_id: workflowId,
+    session_url: sessionData.url,
     status: 'not_started',
   })
 

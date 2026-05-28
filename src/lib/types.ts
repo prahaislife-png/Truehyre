@@ -53,6 +53,7 @@ export interface Verification {
   face_match_score: number | null
   liveness_score: number | null
   aml_hits: number | null
+  session_url: string | null
   reference_image_url: string | null
   duplicate_face_flag: boolean
   duplicate_candidate_id: string | null

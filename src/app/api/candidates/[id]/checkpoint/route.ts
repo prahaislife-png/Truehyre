@@ -79,6 +79,7 @@ export async function POST(
     checkpoint,
     didit_session_id: sessionData.session_id,
     workflow_id: workflowId,
+    session_url: sessionData.url,
     status: 'not_started',
   })
 
