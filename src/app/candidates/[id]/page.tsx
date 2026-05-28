@@ -7,6 +7,7 @@ import CheckpointActions from '@/components/CheckpointActions'
 import SendLinkBox from '@/components/SendLinkBox'
 import CandidateRefresher from '@/components/CandidateRefresher'
 import CandidateDetailActions from '@/components/CandidateDetailActions'
+import CandidateVerificationOptions from '@/components/CandidateVerificationOptions'
 import type { CandidateStatus, Verification, DiditWarning } from '@/lib/types'
 import Link from 'next/link'
 
@@ -25,6 +26,29 @@ function humanizeWarning(w: string | DiditWarning): string {
     ? w
     : (w.short_description ?? w.long_description ?? w.feature ?? w.risk ?? JSON.stringify(w))
   return WARNING_MAP[raw] ?? raw
+}
+
+function extractFaceImageUrls(v: Verification): { selfie: string | null; ref: string | null } {
+  const fm = v.decision_json?.face_matches?.[0]
+  const images = fm?.images as Record<string, string> | undefined
+  let selfie: string | null = null
+  if (images) {
+    for (const k of ['user_image', 'selfie', 'live_image', 'capture']) {
+      if (images[k]) { selfie = images[k]; break }
+    }
+  }
+  // Fall back to liveness image
+  if (!selfie) {
+    const lc = v.decision_json?.liveness_checks?.[0] as Record<string, unknown> | undefined
+    selfie = (lc?.image_url ?? lc?.selfie_url ?? null) as string | null
+  }
+  const ref = (images?.ref_image ?? images?.reference ?? v.reference_image_url) ?? null
+  return { selfie, ref }
+}
+
+function proxyUrl(url: string | null): string | null {
+  if (!url) return null
+  return `/api/image-proxy?url=${encodeURIComponent(url)}`
 }
 
 export default async function CandidateDetailPage({
@@ -62,6 +86,22 @@ export default async function CandidateDetailPage({
   const c2 = verifications.find(v => v.checkpoint === 'C2') ?? null
   const c3 = verifications.find(v => v.checkpoint === 'C3') ?? null
 
+  // Resolve duplicate candidate name for any flagged recheck
+  const duplicateCandidateId = c2?.duplicate_candidate_id ?? c3?.duplicate_candidate_id ?? null
+  let duplicateNames: Record<string, string> = {}
+  if (duplicateCandidateId) {
+    const { data: dup } = await supabase.from('candidates').select('id, full_name').eq('id', duplicateCandidateId).maybeSingle()
+    if (dup) duplicateNames = { [dup.id]: dup.full_name }
+  }
+
+  // Face images for C2/C3 (proxied)
+  const c2Images = c2 ? extractFaceImageUrls(c2) : null
+  const c3Images = c3 ? extractFaceImageUrls(c3) : null
+  const c1RefImageUrl = proxyUrl(c1?.reference_image_url ?? null)
+
+  // Whether any checkpoint has a duplicate face alert
+  const hasDuplicateAlert = !!(c2?.duplicate_face_flag || c3?.duplicate_face_flag)
+
   // C1 details for the identity sections
   const c1Decision = c1?.decision_json ?? null
 
@@ -98,6 +138,27 @@ export default async function CandidateDetailPage({
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
 
+        {/* ─── Fraud alert banner ─── */}
+        {hasDuplicateAlert && (
+          <div className="bg-red-600 text-white rounded-2xl px-6 py-4 flex items-start gap-4 shadow-lg">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-bold text-base">Duplicate Face Detected</p>
+              <p className="text-sm text-red-100 mt-0.5">
+                This candidate&apos;s biometric selfie matched a different candidate in your database.
+                {duplicateCandidateId && duplicateNames[duplicateCandidateId] && (
+                  <> Matched: <Link href={`/candidates/${duplicateCandidateId}`} className="underline font-semibold text-white hover:text-red-200">{duplicateNames[duplicateCandidateId]}</Link>.</>
+                )}
+                {' '}Do not proceed without manual review.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* ─── Hero card: profile + checkpoints unified ─── */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
 
@@ -129,7 +190,7 @@ export default async function CandidateDetailPage({
           <div className="px-7 py-6">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">Verification Checkpoints</p>
 
-            <CheckpointTimeline c1={c1} c2={c2} c3={c3} />
+            <CheckpointTimeline c1={c1} c2={c2} c3={c3} duplicateNames={duplicateNames} />
 
             {/* Send link boxes for active checkpoints */}
             {[c1, c2, c3].filter(
@@ -172,6 +233,14 @@ export default async function CandidateDetailPage({
                 </div>
               </div>
             )}
+
+            {/* Verification options (Proof of Address + Database Validation) */}
+            <CandidateVerificationOptions
+              candidateId={id}
+              poaEnabled={candidate.proof_of_address_enabled}
+              dbEnabled={candidate.database_validation_enabled}
+              c1Status={c1?.status ?? null}
+            />
           </div>
         </div>
 
@@ -260,6 +329,34 @@ export default async function CandidateDetailPage({
           </Section>
         )}
 
+        {/* C2 Face match images */}
+        {c2 && c2.face_match_score != null && (
+          <CollapsibleSection title="C2 — Face Match">
+            <FaceMatchPanel
+              matchScore={c2.face_match_score}
+              isDuplicate={c2.duplicate_face_flag}
+              duplicateName={c2.duplicate_candidate_id ? (duplicateNames[c2.duplicate_candidate_id] ?? null) : null}
+              duplicateId={c2.duplicate_candidate_id}
+              selfieUrl={proxyUrl(c2Images?.selfie ?? null)}
+              refUrl={c1RefImageUrl}
+            />
+          </CollapsibleSection>
+        )}
+
+        {/* C3 Face match images */}
+        {c3 && c3.face_match_score != null && (
+          <CollapsibleSection title="C3 — Face Match">
+            <FaceMatchPanel
+              matchScore={c3.face_match_score}
+              isDuplicate={c3.duplicate_face_flag}
+              duplicateName={c3.duplicate_candidate_id ? (duplicateNames[c3.duplicate_candidate_id] ?? null) : null}
+              duplicateId={c3.duplicate_candidate_id}
+              selfieUrl={proxyUrl(c3Images?.selfie ?? null)}
+              refUrl={c1RefImageUrl}
+            />
+          </CollapsibleSection>
+        )}
+
         {/* Audit trail */}
         {auditEntries && auditEntries.length > 0 && (
           <CollapsibleSection title="Audit trail">
@@ -276,6 +373,77 @@ export default async function CandidateDetailPage({
           </CollapsibleSection>
         )}
       </main>
+    </div>
+  )
+}
+
+function FaceMatchPanel({
+  matchScore,
+  isDuplicate,
+  duplicateName,
+  duplicateId,
+  selfieUrl,
+  refUrl,
+}: {
+  matchScore: number
+  isDuplicate: boolean
+  duplicateName: string | null
+  duplicateId: string | null
+  selfieUrl: string | null
+  refUrl: string | null
+}) {
+  const pct = Math.round(matchScore * 100)
+  const color = isDuplicate ? 'text-red-600' : pct >= 70 ? 'text-green-700' : pct >= 50 ? 'text-yellow-700' : 'text-red-600'
+
+  return (
+    <div className="space-y-4">
+      {isDuplicate && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-800">
+          <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          <span>
+            <strong>Duplicate face detected.</strong>
+            {duplicateId && (
+              <> Matched: <Link href={`/candidates/${duplicateId}`} className="underline font-semibold hover:text-red-900">{duplicateName ?? duplicateId}</Link>.</>
+            )}
+          </span>
+        </div>
+      )}
+      <div className="flex items-center gap-6">
+        <div className="text-center">
+          <p className="text-xs text-gray-400 mb-1">Match score</p>
+          <p className={`text-3xl font-black ${color}`}>{pct}%</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-gray-400 mb-1">Verdict</p>
+          <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold border ${
+            isDuplicate ? 'bg-red-100 text-red-800 border-red-300' :
+            pct >= 70   ? 'bg-green-100 text-green-800 border-green-300' :
+                          'bg-red-100 text-red-800 border-red-300'
+          }`}>
+            {isDuplicate ? 'DUPLICATE' : pct >= 70 ? 'MATCH' : 'NO MATCH'}
+          </span>
+        </div>
+      </div>
+      {(selfieUrl || refUrl) && (
+        <div className="grid grid-cols-2 gap-4">
+          {selfieUrl && (
+            <div>
+              <p className="text-xs text-gray-400 mb-1.5">New selfie (this check)</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={selfieUrl} alt="New selfie" className="w-full rounded-xl border border-gray-200 object-cover aspect-[3/4]" />
+            </div>
+          )}
+          {refUrl && (
+            <div>
+              <p className="text-xs text-gray-400 mb-1.5">Reference selfie (C1)</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={refUrl} alt="C1 reference" className="w-full rounded-xl border border-gray-200 object-cover aspect-[3/4]" />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

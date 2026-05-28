@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { full_name, email, phone, role_applied, client_id, aml_enabled } = body
+  const { full_name, email, phone, role_applied, client_id, aml_enabled, proof_of_address_enabled, database_validation_enabled } = body
 
   if (!full_name || !email) {
     return NextResponse.json({ error: 'full_name and email are required' }, { status: 400 })
@@ -37,6 +37,8 @@ export async function POST(request: NextRequest) {
       recruiter_id: user.id,
       org_id: profile.org_id,
       aml_enabled: Boolean(aml_enabled),
+      proof_of_address_enabled: Boolean(proof_of_address_enabled),
+      database_validation_enabled: Boolean(database_validation_enabled),
       overall_status: 'pending',
     })
     .select('*, clients(name)')
@@ -46,7 +48,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: candidateErr.message }, { status: 500 })
   }
 
-  const workflowId = process.env.DIDIT_WORKFLOW_C1!
+  const poa = Boolean(proof_of_address_enabled)
+  const dbv = Boolean(database_validation_enabled)
+  const workflowId =
+    poa && dbv ? (process.env.DIDIT_WORKFLOW_C1_POA_DB ?? process.env.DIDIT_WORKFLOW_C1!) :
+    poa        ? (process.env.DIDIT_WORKFLOW_C1_POA    ?? process.env.DIDIT_WORKFLOW_C1!) :
+    dbv        ? (process.env.DIDIT_WORKFLOW_C1_DB     ?? process.env.DIDIT_WORKFLOW_C1!) :
+    process.env.DIDIT_WORKFLOW_C1!
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!
 
   let sessionData: { session_id: string; url: string }
@@ -79,7 +87,7 @@ export async function POST(request: NextRequest) {
   await logAudit('candidate_created', {
     actorId: user.id,
     candidateId: candidate.id,
-    meta: { email, aml_enabled: Boolean(aml_enabled) },
+    meta: { email, aml_enabled: Boolean(aml_enabled), proof_of_address_enabled: poa, database_validation_enabled: dbv },
   })
 
   // Send verification link to candidate automatically

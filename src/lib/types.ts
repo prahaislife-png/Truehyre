@@ -59,6 +59,8 @@ export interface Candidate {
   didit_session_id: string | null
   overall_status: CandidateStatus
   aml_enabled: boolean
+  proof_of_address_enabled: boolean
+  database_validation_enabled: boolean
   created_at: string
   clients?: { name: string }
 }

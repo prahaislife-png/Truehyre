@@ -18,6 +18,8 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
     role_applied: '',
     client_id: '',
     aml_enabled: false,
+    proof_of_address_enabled: false,
+    database_validation_enabled: false,
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -107,6 +109,25 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
                   className="rounded border-gray-300" />
                 <span className="text-sm text-gray-700">Enable AML screening</span>
               </label>
+              <div className="border-t border-gray-100 pt-3 space-y-2">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">C1 Verification options</p>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.proof_of_address_enabled} onChange={e => set('proof_of_address_enabled', e.target.checked)}
+                    className="rounded border-gray-300 mt-0.5" />
+                  <div>
+                    <span className="text-sm text-gray-700 font-medium">Proof of Address</span>
+                    <p className="text-xs text-gray-400">Candidate submits a utility bill or bank statement</p>
+                  </div>
+                </label>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.database_validation_enabled} onChange={e => set('database_validation_enabled', e.target.checked)}
+                    className="rounded border-gray-300 mt-0.5" />
+                  <div>
+                    <span className="text-sm text-gray-700 font-medium">Database Validation</span>
+                    <p className="text-xs text-gray-400">Validates ID number against government records (340+ countries)</p>
+                  </div>
+                </label>
+              </div>
               <div className="pt-2 flex gap-2">
                 <button type="button" onClick={onClose}
                   className="flex-1 rounded-lg border border-gray-300 py-2 text-sm hover:bg-gray-50 transition-colors">

@@ -16,7 +16,7 @@ export async function POST(
 
   const { data: candidate } = await supabase
     .from('candidates')
-    .select('id, full_name, overall_status')
+    .select('id, full_name, overall_status, proof_of_address_enabled, database_validation_enabled')
     .eq('id', id)
     .single()
 
@@ -41,7 +41,13 @@ export async function POST(
     return NextResponse.json({ error: 'C1 is already in a terminal state' }, { status: 409 })
   }
 
-  const workflowId = process.env.DIDIT_WORKFLOW_C1!
+  const poa = Boolean(candidate.proof_of_address_enabled)
+  const dbv = Boolean(candidate.database_validation_enabled)
+  const workflowId =
+    poa && dbv ? (process.env.DIDIT_WORKFLOW_C1_POA_DB ?? process.env.DIDIT_WORKFLOW_C1!) :
+    poa        ? (process.env.DIDIT_WORKFLOW_C1_POA    ?? process.env.DIDIT_WORKFLOW_C1!) :
+    dbv        ? (process.env.DIDIT_WORKFLOW_C1_DB     ?? process.env.DIDIT_WORKFLOW_C1!) :
+    process.env.DIDIT_WORKFLOW_C1!
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!
 
   let sessionData: { session_id: string; url: string }

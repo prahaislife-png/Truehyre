@@ -1,5 +1,6 @@
 import type { Verification, CandidateStatus } from '@/lib/types'
 import StatusBadge from './StatusBadge'
+import Link from 'next/link'
 
 function recheckVerdict(v: Verification): { label: string; className: string } | null {
   if (!v.face_match_score && !v.duplicate_face_flag) return null
@@ -27,11 +28,13 @@ function CheckpointNode({
   sublabel,
   verification,
   isLast,
+  duplicateNames,
 }: {
   label: string
   sublabel: string
   verification: Verification | null
   isLast: boolean
+  duplicateNames?: Record<string, string>
 }) {
   const status = (verification?.status ?? 'not_started') as CandidateStatus
   const isActive = !!verification
@@ -95,9 +98,24 @@ function CheckpointNode({
 
               {/* Duplicate reference */}
               {verification.duplicate_candidate_id && (
-                <p className="text-xs text-red-700 bg-red-50 rounded px-2 py-1">
-                  Matched candidate ID: {verification.duplicate_candidate_id}
-                </p>
+                <div className="text-xs text-red-700 bg-red-50 rounded px-2 py-1">
+                  Duplicate face matched:&nbsp;
+                  {duplicateNames?.[verification.duplicate_candidate_id] ? (
+                    <Link
+                      href={`/candidates/${verification.duplicate_candidate_id}`}
+                      className="font-medium underline hover:text-red-900"
+                    >
+                      {duplicateNames[verification.duplicate_candidate_id]}
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/candidates/${verification.duplicate_candidate_id}`}
+                      className="font-mono underline hover:text-red-900"
+                    >
+                      {verification.duplicate_candidate_id}
+                    </Link>
+                  )}
+                </div>
               )}
 
               {/* Timestamp */}
@@ -127,10 +145,12 @@ export default function CheckpointTimeline({
   c1,
   c2,
   c3,
+  duplicateNames,
 }: {
   c1: Verification | null
   c2: Verification | null
   c3: Verification | null
+  duplicateNames?: Record<string, string>
 }) {
   return (
     <div>
@@ -139,18 +159,21 @@ export default function CheckpointTimeline({
         sublabel="Baseline ID + liveness + face enrolment"
         verification={c1}
         isLast={false}
+        duplicateNames={duplicateNames}
       />
       <CheckpointNode
         label="C2 — Interview Check"
         sublabel="Liveness re-check + face match vs C1"
         verification={c2}
         isLast={false}
+        duplicateNames={duplicateNames}
       />
       <CheckpointNode
         label="C3 — Offer Check"
         sublabel="Final liveness re-check + face match vs C1"
         verification={c3}
         isLast={true}
+        duplicateNames={duplicateNames}
       />
     </div>
   )
