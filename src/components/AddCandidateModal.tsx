@@ -53,12 +53,10 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
     setLoading(false)
   }
 
-  const consentUrl = sessionUrl
-    ? `${window.location.origin}/consent/${sessionUrl.split('/').pop()}?cid=${candidateId}`
-    : ''
+  const verifyUrl = sessionUrl ?? ''
 
   async function copyLink() {
-    await navigator.clipboard.writeText(consentUrl)
+    await navigator.clipboard.writeText(verifyUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -147,7 +145,7 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
 
             {/* Link display */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3 break-all text-xs font-mono text-gray-600">
-              {consentUrl}
+              {verifyUrl}
             </div>
 
             <div className="flex gap-2 mb-3">
@@ -155,11 +153,11 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
                 className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700 transition-colors">
                 {copied ? '✓ Copied!' : 'Copy link'}
               </button>
-              <a href={`mailto:${form.email}?subject=Identity Verification Required&body=Hi ${form.full_name},%0A%0APlease complete your identity verification for your job application:%0A%0A${consentUrl}%0A%0AIt takes about 2 minutes on your phone. No app needed.`}
+              <a href={`mailto:${form.email}?subject=Identity Verification Required&body=Hi ${form.full_name},%0A%0APlease complete your identity verification for your job application:%0A%0A${verifyUrl}%0A%0AIt takes about 2 minutes on your phone. No app needed.`}
                 className="flex-1 text-center rounded-lg border border-gray-300 py-2 text-sm hover:bg-gray-50 transition-colors">
                 Send email
               </a>
-              <a href={`https://wa.me/?text=${encodeURIComponent(`Hi ${form.full_name}, please complete your identity verification for your job application: ${consentUrl} — takes ~2 min on your phone, no app needed.`)}`}
+              <a href={`https://wa.me/?text=${encodeURIComponent(`Hi ${form.full_name}, please complete your identity verification for your job application: ${verifyUrl} — takes ~2 min on your phone, no app needed.`)}`}
                 target="_blank" rel="noopener noreferrer"
                 className="flex-1 text-center rounded-lg border border-gray-300 py-2 text-sm hover:bg-gray-50 transition-colors">
                 WhatsApp

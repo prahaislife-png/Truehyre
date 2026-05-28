@@ -34,9 +34,7 @@ export default function CheckpointActions({ candidateId, c1Approved, c2Status, c
       if (!res.ok) {
         setError(data.error ?? 'Failed to create session')
       } else {
-        const token = (data.session_url as string).split('/').pop() ?? ''
-        const consentUrl = `${window.location.origin}/consent/${token}?cid=${candidateId}`
-        setSessionUrl({ checkpoint, url: consentUrl })
+        setSessionUrl({ checkpoint, url: data.session_url as string })
       }
     } catch {
       setError('Network error')

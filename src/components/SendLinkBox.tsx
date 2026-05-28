@@ -19,14 +19,11 @@ const LABELS: Record<string, string> = {
 export default function SendLinkBox({ sessionUrl, candidateId, candidateName, candidateEmail, checkpoint }: Props) {
   const [copied, setCopied] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
-  const [currentSessionUrl, setCurrentSessionUrl] = useState(sessionUrl)
-
-  const token = currentSessionUrl.split('/').pop() ?? ''
-  const consentUrl = `${window.location.origin}/consent/${token}?cid=${candidateId}`
+  const [verifyUrl, setVerifyUrl] = useState(sessionUrl)
   const label = LABELS[checkpoint]
 
   async function copy() {
-    await navigator.clipboard.writeText(consentUrl)
+    await navigator.clipboard.writeText(verifyUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -41,7 +38,7 @@ export default function SendLinkBox({ sessionUrl, candidateId, candidateName, ca
         return
       }
       const data = await res.json()
-      setCurrentSessionUrl(data.session_url)
+      setVerifyUrl(data.session_url)
     } finally {
       setRefreshing(false)
     }
@@ -69,11 +66,11 @@ export default function SendLinkBox({ sessionUrl, candidateId, candidateName, ca
       </div>
 
       <p className="text-xs text-blue-700">
-        The candidate opens this link on their phone, taps Continue, and completes the verification. You'll see the result here automatically.
+        The candidate opens this link on their phone and completes the verification. You'll see the result here automatically.
       </p>
 
       <div className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-xs font-mono text-gray-600 break-all">
-        {consentUrl}
+        {verifyUrl}
       </div>
 
       <div className="flex gap-2">
@@ -84,13 +81,13 @@ export default function SendLinkBox({ sessionUrl, candidateId, candidateName, ca
           {copied ? '✓ Copied!' : 'Copy link'}
         </button>
         <a
-          href={`mailto:${candidateEmail}?subject=${encodeURIComponent(`${label} — action required`)}&body=${encodeURIComponent(`Hi ${candidateName},\n\nPlease complete your ${label.toLowerCase()} for your job application:\n\n${consentUrl}\n\nIt takes about 2 minutes on your phone. No app needed.`)}`}
+          href={`mailto:${candidateEmail}?subject=${encodeURIComponent(`${label} — action required`)}&body=${encodeURIComponent(`Hi ${candidateName},\n\nPlease complete your ${label.toLowerCase()} for your job application:\n\n${verifyUrl}\n\nIt takes about 2 minutes on your phone. No app needed.`)}`}
           className="flex-1 text-center rounded-lg border border-blue-200 bg-white py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors"
         >
           Email
         </a>
         <a
-          href={`https://wa.me/?text=${encodeURIComponent(`Hi ${candidateName}, please complete your ${label.toLowerCase()} for your job application: ${consentUrl} — takes ~2 min on your phone, no app needed.`)}`}
+          href={`https://wa.me/?text=${encodeURIComponent(`Hi ${candidateName}, please complete your ${label.toLowerCase()} for your job application: ${verifyUrl} — takes ~2 min on your phone, no app needed.`)}`}
           target="_blank" rel="noopener noreferrer"
           className="flex-1 text-center rounded-lg border border-blue-200 bg-white py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors"
         >
