@@ -53,15 +53,15 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
     setLoading(false)
   }
 
-  async function copyLink() {
-    await navigator.clipboard.writeText(sessionUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   const consentUrl = sessionUrl
     ? `${window.location.origin}/consent/${sessionUrl.split('/').pop()}?cid=${candidateId}`
     : ''
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(consentUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -123,34 +123,52 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
           </>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-semibold">Verification link ready</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Send this link to the candidate</h2>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Send this consent link to the candidate. They will review the data-processing notice before being directed to Didit for verification.
-            </p>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4 break-all text-sm font-mono text-gray-700">
+
+            {/* Step explainer */}
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4 space-y-2">
+              <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">How it works</p>
+              <div className="flex items-start gap-2 text-sm text-blue-900">
+                <span className="font-bold shrink-0">1.</span>
+                <span>Copy or send this link to <strong>{form.full_name || 'the candidate'}</strong> via email, WhatsApp, or any channel.</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-blue-900">
+                <span className="font-bold shrink-0">2.</span>
+                <span>They open it on their phone, scan their ID, and take a selfie. Takes ~2 minutes.</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-blue-900">
+                <span className="font-bold shrink-0">3.</span>
+                <span>You come back here and open their profile — the result (Pass / Review / Fail) appears automatically.</span>
+              </div>
+            </div>
+
+            {/* Link display */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3 break-all text-xs font-mono text-gray-600">
               {consentUrl}
             </div>
-            <div className="flex gap-2 mb-4">
+
+            <div className="flex gap-2 mb-3">
               <button onClick={copyLink}
                 className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700 transition-colors">
-                {copied ? 'Copied!' : 'Copy link'}
+                {copied ? '✓ Copied!' : 'Copy link'}
               </button>
-              <a href={`mailto:?subject=Identity Verification Required&body=Please complete your identity verification: ${consentUrl}`}
+              <a href={`mailto:${form.email}?subject=Identity Verification Required&body=Hi ${form.full_name},%0A%0APlease complete your identity verification for your job application:%0A%0A${consentUrl}%0A%0AIt takes about 2 minutes on your phone. No app needed.`}
                 className="flex-1 text-center rounded-lg border border-gray-300 py-2 text-sm hover:bg-gray-50 transition-colors">
                 Send email
               </a>
-              <a href={`https://wa.me/?text=${encodeURIComponent(`Please complete your identity verification: ${consentUrl}`)}`}
+              <a href={`https://wa.me/?text=${encodeURIComponent(`Hi ${form.full_name}, please complete your identity verification for your job application: ${consentUrl} — takes ~2 min on your phone, no app needed.`)}`}
                 target="_blank" rel="noopener noreferrer"
                 className="flex-1 text-center rounded-lg border border-gray-300 py-2 text-sm hover:bg-gray-50 transition-colors">
                 WhatsApp
               </a>
             </div>
+
             <button onClick={onClose}
-              className="w-full rounded-lg border border-gray-300 py-2 text-sm hover:bg-gray-50 transition-colors">
-              Done
+              className="w-full rounded-lg border border-gray-300 py-2 text-sm hover:bg-gray-50 transition-colors text-gray-600">
+              Done — I'll send it later
             </button>
           </>
         )}
