@@ -66,32 +66,58 @@ export default async function CandidateDetailPage({
   const c1Decision = c1?.decision_json ?? null
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <CandidateRefresher status={candidate.overall_status} />
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-800">
-            ← Dashboard
-          </Link>
-          <span className="text-gray-300">/</span>
-          <h1 className="text-sm font-medium">{candidate.full_name}</h1>
+
+      {/* Sticky nav */}
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-30">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm">
+            <Link href="/dashboard" className="flex items-center gap-1.5 text-gray-400 hover:text-gray-700 transition-colors">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              Dashboard
+            </Link>
+            <span className="text-gray-200">/</span>
+            <span className="font-semibold text-gray-800">{candidate.full_name}</span>
+          </div>
+          {candidate.didit_session_id && (
+            <a
+              href={`/api/candidates/${id}/pdf`}
+              className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 transition-colors font-medium"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download PDF
+            </a>
+          )}
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-        {/* Header card */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold">{candidate.full_name}</h2>
-              <p className="text-sm text-gray-500 mt-0.5">{candidate.email}</p>
-              {candidate.phone && <p className="text-sm text-gray-500">{candidate.phone}</p>}
-              {candidate.role_applied && (
-                <p className="text-sm text-gray-600 mt-1">Role: {candidate.role_applied}</p>
-              )}
-              {candidate.clients && (
-                <p className="text-sm text-gray-600">Client: {(candidate.clients as { name: string }).name}</p>
-              )}
+      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+
+        {/* ─── Hero card: profile + checkpoints unified ─── */}
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+
+          {/* Top strip: candidate identity */}
+          <div className="px-7 pt-7 pb-5 flex items-start justify-between gap-4 border-b border-gray-100">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-700 font-black text-lg">
+                  {candidate.full_name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <h1 className="text-xl font-black text-gray-900">{candidate.full_name}</h1>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
+                  <span className="text-sm text-gray-500">{candidate.email}</span>
+                  {candidate.phone && <span className="text-sm text-gray-400">· {candidate.phone}</span>}
+                  {candidate.role_applied && <span className="text-sm text-gray-500">· {candidate.role_applied}</span>}
+                  {candidate.clients && <span className="text-sm text-gray-400">· {(candidate.clients as { name: string }).name}</span>}
+                </div>
+              </div>
             </div>
             <div className="flex flex-col items-end gap-3 flex-shrink-0">
               <StatusBadge status={candidate.overall_status as CandidateStatus} />
@@ -99,72 +125,54 @@ export default async function CandidateDetailPage({
             </div>
           </div>
 
-          {candidate.didit_session_id && (
-            <div className="mt-4">
-              <a
-                href={`/api/candidates/${id}/pdf`}
-                className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Download compliance PDF
-              </a>
-            </div>
-          )}
-        </div>
+          {/* Checkpoint section — the main event */}
+          <div className="px-7 py-6">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">Verification Checkpoints</p>
 
-        {/* Verification timeline */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Verification checkpoints</h3>
-          </div>
-          <CheckpointTimeline c1={c1} c2={c2} c3={c3} />
+            <CheckpointTimeline c1={c1} c2={c2} c3={c3} />
 
-          {/* Show send-link box for any checkpoint that has a URL but isn't done */}
-          <div className="mt-4 space-y-3">
+            {/* Send link boxes for active checkpoints */}
             {[c1, c2, c3].filter(
               (v): v is Verification =>
-                !!v &&
-                !!v.session_url &&
-                !['approved', 'declined'].includes(v.status)
+                !!v && !!v.session_url && !['approved', 'declined'].includes(v.status)
             ).map(v => (
-              <SendLinkBox
-                key={v.id}
-                sessionUrl={v.session_url!}
-                candidateId={id}
-                candidateName={candidate.full_name}
-                candidateEmail={candidate.email}
-                checkpoint={v.checkpoint ?? 'C1'}
-              />
+              <div key={v.id} className="mt-4">
+                <SendLinkBox
+                  sessionUrl={v.session_url!}
+                  candidateId={id}
+                  candidateName={candidate.full_name}
+                  candidateEmail={candidate.email}
+                  checkpoint={v.checkpoint ?? 'C1'}
+                />
+              </div>
             ))}
-          </div>
 
-          {/* Checkpoint action buttons */}
-          {c1?.status === 'approved' && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    {!c2 ? 'Next step: Interview check' :
-                     c2.status === 'approved' && !c3 ? 'Next step: Offer check' :
-                     'Send additional checks'}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {!c2 ? 'C1 identity passed — send the C2 liveness check for the interview stage' :
-                     c2.status === 'approved' && !c3 ? 'C2 passed — send the C3 check before making an offer' :
-                     'Trigger C2 or C3 verification for this candidate'}
-                  </p>
+            {/* Next step actions */}
+            {c1?.status === 'approved' && (
+              <div className="mt-6 pt-5 border-t border-gray-100">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="text-sm font-bold text-gray-800">
+                      {!c2 ? '→ Next: Send Interview check (C2)' :
+                       c2.status === 'approved' && !c3 ? '→ Next: Send Offer check (C3)' :
+                       'Trigger additional checks'}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {!c2 ? 'C1 passed — trigger liveness check before the interview starts' :
+                       c2.status === 'approved' && !c3 ? 'C2 passed — trigger final re-verification at offer stage' :
+                       'Manually trigger the next checkpoint'}
+                    </p>
+                  </div>
+                  <CheckpointActions
+                    candidateId={id}
+                    c1Approved={c1.status === 'approved'}
+                    c2Status={c2?.status ?? null}
+                    c3Status={c3?.status ?? null}
+                  />
                 </div>
               </div>
-              <CheckpointActions
-                candidateId={id}
-                c1Approved={c1.status === 'approved'}
-                c2Status={c2?.status ?? null}
-                c3Status={c3?.status ?? null}
-              />
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* C1 ID verification details */}

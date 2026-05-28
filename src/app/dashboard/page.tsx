@@ -38,12 +38,22 @@ export default async function DashboardPage() {
     supabase.from('candidates').select('*, clients(name)').order('created_at', { ascending: false }),
     supabase.from('clients').select('*').order('name'),
     supabase.from('organizations').select('name').eq('id', profile.org_id).single(),
-    supabase.from('verifications').select('checkpoint, status'),
+    supabase.from('verifications').select('candidate_id, checkpoint, status').order('created_at', { ascending: false }),
     supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(10),
   ])
 
   const all = candidates ?? []
   const allVerifications = verifications ?? []
+
+  // Build per-candidate checkpoint map (first row per checkpoint = most recent, since ordered desc)
+  const checkpointMap: Record<string, { C1?: string; C2?: string; C3?: string }> = {}
+  for (const v of allVerifications) {
+    const cid = (v as { candidate_id: string; checkpoint: string | null; status: string }).candidate_id
+    const cp = (v as { checkpoint: string | null }).checkpoint ?? 'C1'
+    if (!checkpointMap[cid]) checkpointMap[cid] = {}
+    const entry = checkpointMap[cid] as Record<string, string>
+    if (!entry[cp]) entry[cp] = (v as { status: string }).status
+  }
   const auditEntries = recentAudit ?? []
 
   const kpis = {
@@ -173,6 +183,7 @@ export default async function DashboardPage() {
             candidates={all}
             clients={clients ?? []}
             recruiterId={user.id}
+            checkpointMap={checkpointMap}
           />
         </div>
       </main>

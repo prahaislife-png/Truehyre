@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import type { Candidate, Client } from '@/lib/types'
 import StatusBadge from './StatusBadge'
-import Link from 'next/link'
 import AddCandidateModal from './AddCandidateModal'
 import EditCandidateModal from './EditCandidateModal'
 
@@ -11,6 +11,7 @@ interface Props {
   candidates: Candidate[]
   clients: Client[]
   recruiterId: string
+  checkpointMap?: Record<string, { C1?: string; C2?: string; C3?: string }>
 }
 
 const ACTION_STATUSES = new Set(['pending', 'not_started', 'awaiting_user', 'in_progress', 'in_review', 'resubmitted'])
@@ -44,12 +45,44 @@ function exportCsv(rows: Candidate[]) {
   URL.revokeObjectURL(url)
 }
 
+const CP_COLORS: Record<string, string> = {
+  approved:      'bg-emerald-100 text-emerald-700',
+  declined:      'bg-red-100 text-red-600',
+  in_progress:   'bg-blue-100 text-blue-600',
+  awaiting_user: 'bg-blue-100 text-blue-600',
+  in_review:     'bg-amber-100 text-amber-600',
+  resubmitted:   'bg-amber-100 text-amber-600',
+  not_started:   'bg-gray-100 text-gray-500',
+  pending:       'bg-gray-100 text-gray-500',
+}
+const CP_SYMBOLS: Record<string, string> = {
+  approved: '✓', declined: '✗',
+}
+
+function CheckpointChips({ cps }: { cps: { C1?: string; C2?: string; C3?: string } }) {
+  return (
+    <div className="flex items-center gap-1 mt-1.5">
+      {(['C1', 'C2', 'C3'] as const).map(cp => {
+        const status = cps[cp]
+        const color = status ? (CP_COLORS[status] ?? 'bg-gray-100 text-gray-400') : 'bg-gray-50 text-gray-300 border border-dashed border-gray-200'
+        const symbol = status ? (CP_SYMBOLS[status] ?? '●') : '○'
+        return (
+          <span key={cp} className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${color}`}>
+            {symbol} {cp}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 function SortIcon({ column, sortKey, sortDir }: { column: SortKey; sortKey: SortKey; sortDir: SortDir }) {
   if (column !== sortKey) return <span className="ml-1 text-gray-300 text-xs">↕</span>
   return <span className="ml-1 text-blue-500 text-xs">{sortDir === 'asc' ? '↑' : '↓'}</span>
 }
 
-export default function CandidateTable({ candidates, clients, recruiterId }: Props) {
+export default function CandidateTable({ candidates, clients, recruiterId, checkpointMap = {} }: Props) {
+  const router = useRouter()
   const [showAddModal, setShowAddModal] = useState(false)
   const [editCandidate, setEditCandidate] = useState<Candidate | null>(null)
   const [filterClient, setFilterClient] = useState('')
@@ -257,17 +290,25 @@ export default function CandidateTable({ candidates, clients, recruiterId }: Pro
                 const isResending = resending === c.id
                 const didResend = resendSuccess === c.id
                 const isDeleting = deleting === c.id
+                const cps = checkpointMap[c.id] ?? {}
                 return (
-                  <tr key={c.id} className={`hover:bg-gray-50 transition-colors group ${needsAction ? 'border-l-2 border-l-blue-400' : ''}`}>
-                    <td className="px-4 py-3 font-medium text-gray-900">
+                  <tr
+                    key={c.id}
+                    onClick={() => router.push(`/candidates/${c.id}`)}
+                    className={`hover:bg-blue-50/40 transition-colors cursor-pointer group ${needsAction ? 'border-l-2 border-l-blue-400' : ''}`}
+                  >
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {needsAction && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />}
-                        {c.full_name}
+                        <div>
+                          <p className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">{c.full_name}</p>
+                          <CheckpointChips cps={cps} />
+                        </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{c.email}</td>
-                    <td className="px-4 py-3 text-gray-500">{c.role_applied ?? '—'}</td>
-                    <td className="px-4 py-3 text-gray-500">{c.clients?.name ?? '—'}</td>
+                    <td className="px-4 py-3 text-gray-500 text-sm">{c.email}</td>
+                    <td className="px-4 py-3 text-gray-500 text-sm">{c.role_applied ?? '—'}</td>
+                    <td className="px-4 py-3 text-gray-500 text-sm">{c.clients?.name ?? '—'}</td>
                     <td className="px-4 py-3">
                       <StatusBadge status={c.overall_status as any} />
                     </td>
@@ -275,16 +316,16 @@ export default function CandidateTable({ candidates, clients, recruiterId }: Pro
                       {new Date(c.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div
+                        className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={e => e.stopPropagation()}
+                      >
                         {needsAction && (
                           <button
                             onClick={() => handleResend(c)}
                             disabled={isResending}
-                            title="Resend verification link"
                             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors ${
-                              didResend
-                                ? 'bg-emerald-50 text-emerald-600'
-                                : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                              didResend ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
                             }`}
                           >
                             {didResend ? '✓ Sent' : isResending ? '…' : (
@@ -299,28 +340,18 @@ export default function CandidateTable({ candidates, clients, recruiterId }: Pro
                         )}
                         <button
                           onClick={() => setEditCandidate(c)}
-                          title="Edit candidate"
                           className="p-1.5 rounded-lg bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                          title="Edit"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        <Link
-                          href={`/candidates/${c.id}`}
-                          className="p-1.5 rounded-lg bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                          title="View details"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        </Link>
                         <button
                           onClick={() => handleDelete(c)}
                           disabled={isDeleting}
-                          title="Delete candidate"
                           className="p-1.5 rounded-lg bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                          title="Delete"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -371,17 +402,23 @@ export default function CandidateTable({ candidates, clients, recruiterId }: Pro
         ) : (
           paginated.map(c => {
             const needsAction = ACTION_STATUSES.has(c.overall_status)
+            const cps = checkpointMap[c.id] ?? {}
             return (
-              <div key={c.id} className={`bg-white rounded-xl border px-4 py-3 ${needsAction ? 'border-l-4 border-l-blue-400 border-gray-200' : 'border-gray-200'}`}>
+              <div
+                key={c.id}
+                onClick={() => router.push(`/candidates/${c.id}`)}
+                className={`bg-white rounded-xl border px-4 py-3 cursor-pointer active:bg-blue-50 transition-colors ${needsAction ? 'border-l-4 border-l-blue-400 border-gray-200' : 'border-gray-200'}`}
+              >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0">
                     <p className="font-semibold text-gray-900 truncate">{c.full_name}</p>
                     <p className="text-xs text-gray-500 truncate">{c.email}</p>
                     {c.role_applied && <p className="text-xs text-gray-400 mt-0.5">{c.role_applied}</p>}
+                    <CheckpointChips cps={cps} />
                   </div>
                   <StatusBadge status={c.overall_status as any} />
                 </div>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-2" onClick={e => e.stopPropagation()}>
                   {needsAction && (
                     <button
                       onClick={() => handleResend(c)}
@@ -392,7 +429,6 @@ export default function CandidateTable({ candidates, clients, recruiterId }: Pro
                     </button>
                   )}
                   <button onClick={() => setEditCandidate(c)} className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 font-medium">Edit</button>
-                  <Link href={`/candidates/${c.id}`} className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 font-medium">View</Link>
                   <button onClick={() => handleDelete(c)} className="text-xs px-2.5 py-1 rounded-lg bg-red-50 text-red-500 font-medium">Delete</button>
                 </div>
               </div>
