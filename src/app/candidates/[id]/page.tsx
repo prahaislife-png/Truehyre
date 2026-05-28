@@ -20,12 +20,16 @@ export default async function CandidateDetailPage({
 
   await requireOrg(supabase, user.id)
 
-  const [{ data: candidate }, { data: allVerifications }, { data: auditEntries }] =
+  const [candidateResult, verificationsResult, auditResult] =
     await Promise.all([
-      supabase.from('candidates').select('*, clients(name)').eq('id', id).single(),
+      supabase.from('candidates').select('*, clients(name)').eq('id', id).maybeSingle(),
       supabase.from('verifications').select('*').eq('candidate_id', id).order('created_at', { ascending: false }),
       supabase.from('audit_log').select('*').eq('candidate_id', id).order('created_at', { ascending: false }),
     ])
+
+  const candidate = candidateResult.data
+  const allVerifications = verificationsResult.data
+  const auditEntries = auditResult.data
 
   if (!candidate) notFound()
 
