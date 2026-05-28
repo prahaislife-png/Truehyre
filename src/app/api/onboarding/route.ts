@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
   }
 
   // Promote user to admin of this org
-  await service.from('users').update({ org_id: org.id, role: 'admin' }).eq('id', user.id)
+  const { error: userErr } = await service.from('users').update({ org_id: org.id, role: 'admin' }).eq('id', user.id)
+  if (userErr) return NextResponse.json({ error: 'Failed to set organization' }, { status: 500 })
 
   return NextResponse.json({ ok: true, org_id: org.id })
 }
