@@ -34,7 +34,9 @@ export default function CheckpointActions({ candidateId, c1Approved, c2Status, c
       if (!res.ok) {
         setError(data.error ?? 'Failed to create session')
       } else {
-        setSessionUrl({ checkpoint, url: data.session_url })
+        const token = (data.session_url as string).split('/').pop() ?? ''
+        const consentUrl = `${window.location.origin}/consent/${token}?cid=${candidateId}`
+        setSessionUrl({ checkpoint, url: consentUrl })
       }
     } catch {
       setError('Network error')
@@ -98,7 +100,7 @@ export default function CheckpointActions({ candidateId, c1Approved, c2Status, c
 
       {sessionUrl && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 space-y-2">
-          <p className="text-xs font-semibold text-blue-800">{sessionUrl.checkpoint} session created — send this link to the candidate:</p>
+          <p className="text-xs font-semibold text-blue-800">{sessionUrl.checkpoint} link ready — send to candidate:</p>
           <div className="flex items-center gap-2">
             <input
               readOnly
@@ -111,6 +113,21 @@ export default function CheckpointActions({ candidateId, c1Approved, c2Status, c
             >
               {copied ? 'Copied!' : 'Copy'}
             </button>
+          </div>
+          <div className="flex gap-2">
+            <a
+              href={`mailto:?subject=Identity Verification Required&body=Please complete your identity verification: ${sessionUrl.url}`}
+              className="flex-1 text-center rounded border border-blue-200 bg-white py-1 text-xs text-blue-700 hover:bg-blue-50 transition-colors"
+            >
+              Email
+            </a>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Please complete your identity verification: ${sessionUrl.url}`)}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex-1 text-center rounded border border-blue-200 bg-white py-1 text-xs text-blue-700 hover:bg-blue-50 transition-colors"
+            >
+              WhatsApp
+            </a>
           </div>
         </div>
       )}

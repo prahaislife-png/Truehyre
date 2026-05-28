@@ -123,12 +123,13 @@ export async function faceMatch(
 
 export async function faceSearch(
   userImageBuffer: Buffer,
-  vendorData: string
+  vendorData: string,
+  saveRequest = true
 ): Promise<FaceSearchResult> {
   const { body } = buildFormData({
     user_image: userImageBuffer,
     vendor_data: vendorData,
-    save_api_request: 'true',
+    save_api_request: String(saveRequest),
   })
 
   const res = await fetch(`${DIDIT_BASE}/v3/face-search/`, {

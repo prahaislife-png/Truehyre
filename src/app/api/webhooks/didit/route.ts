@@ -129,8 +129,9 @@ async function processRecheckWithImages(
     const matchScore = matchResult.face_match.score
     const matchStatus = matchResult.face_match.status // 'Approved' | 'Declined'
 
-    // 1:N face search — detect if this face appears under a different candidate identity
-    const searchResult = await faceSearch(newBuffer, candidateId)
+    // 1:N face search — detect if this face appears under a different candidate identity.
+    // save_api_request=false: don't enroll the C2/C3 selfie; only the C1 baseline lives in the pool.
+    const searchResult = await faceSearch(newBuffer, candidateId, false)
     const otherMatches = searchResult.face_search.matches.filter(
       m => m.vendor_data && m.vendor_data !== candidateId && m.similarity_percentage >= 70
     )

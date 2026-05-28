@@ -1,72 +1,55 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useState } from 'react'
+import { COMPANY_NAME, CONSENT_NOTICE } from '@/lib/config/verification'
 
 export default function ConsentPage() {
   const params = useParams()
   const sessionToken = params.sessionId as string
-  const [accepted, setAccepted] = useState(false)
-
-  // The session token here is the last path segment of the Didit URL
-  // We reconstruct the full Didit hosted URL
   const diditUrl = `https://verify.didit.me/u/${sessionToken}`
+  const [loading, setLoading] = useState(false)
 
-  function proceed() {
+  async function proceed() {
+    setLoading(true)
+    const cid = new URLSearchParams(window.location.search).get('cid')
+    if (cid) {
+      try {
+        await fetch('/api/consent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ candidateId: cid }),
+        })
+      } catch {
+        // best-effort — don't block the candidate
+      }
+    }
     window.location.href = diditUrl
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 w-full max-w-lg p-8">
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full mb-4">
-            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900">Identity Verification</h1>
-          <p className="text-sm text-gray-500 mt-1">Powered by TrueHire &amp; Didit</p>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 w-full max-w-sm p-8 text-center">
+        {/* Shield icon */}
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full mb-5">
+          <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-900 space-y-2">
-          <p className="font-medium">Data processing notice</p>
-          <p>
-            To verify your identity, we will collect and process the following data on your behalf:
-          </p>
-          <ul className="list-disc list-inside space-y-1 text-blue-800">
-            <li>Government-issued photo ID (document scan)</li>
-            <li>Liveness selfie (passive check — no active movement needed)</li>
-            <li>Face match between your ID and selfie</li>
-            <li>IP address analysis</li>
-          </ul>
-          <p>
-            This data is transferred to <strong>Didit</strong> (didit.me), a regulated identity verification provider, solely for the purpose of confirming your identity for this job application. Your data is processed in accordance with applicable data protection regulations.
-          </p>
-        </div>
+        <h1 className="text-base font-semibold text-gray-900 mb-3">{COMPANY_NAME}</h1>
 
-        <label className="flex items-start gap-3 cursor-pointer mb-6">
-          <input
-            type="checkbox"
-            checked={accepted}
-            onChange={e => setAccepted(e.target.checked)}
-            className="mt-0.5 rounded border-gray-300"
-          />
-          <span className="text-sm text-gray-700">
-            I have read and understood the data processing notice above and consent to my data being processed for identity verification purposes.
-          </span>
-        </label>
+        <p className="text-sm text-gray-600 leading-relaxed mb-7">{CONSENT_NOTICE}</p>
 
         <button
           onClick={proceed}
-          disabled={!accepted}
-          className="w-full bg-blue-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white rounded-xl py-3 text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
         >
-          Continue to verification
+          {loading ? 'Starting…' : 'Continue'}
         </button>
-        <p className="text-center text-xs text-gray-400 mt-3">
-          Your data is encrypted in transit and at rest.
-        </p>
+
+        <p className="mt-4 text-xs text-gray-400">Powered by Didit · Encrypted in transit</p>
       </div>
     </div>
   )

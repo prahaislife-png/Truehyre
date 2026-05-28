@@ -22,6 +22,7 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [sessionUrl, setSessionUrl] = useState('')
+  const [candidateId, setCandidateId] = useState('')
   const [copied, setCopied] = useState(false)
 
   function set(key: string, value: string | boolean) {
@@ -47,6 +48,7 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
     }
 
     setSessionUrl(data.session_url)
+    setCandidateId(data.candidate.id)
     onAdded(data.candidate)
     setLoading(false)
   }
@@ -57,7 +59,9 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const consentUrl = `${window.location.origin}/consent/${sessionUrl.split('/').pop()}`
+  const consentUrl = sessionUrl
+    ? `${window.location.origin}/consent/${sessionUrl.split('/').pop()}?cid=${candidateId}`
+    : ''
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
