@@ -248,7 +248,13 @@ export async function POST(request: NextRequest) {
 
       // Post-processing on approval
       if (internalStatus === 'approved' && decision) {
-        if (verification.checkpoint === 'C1') {
+        // null checkpoint is a legacy C1 row (checkpoint column was added after initial deploy)
+        const isC1 = verification.checkpoint === 'C1' || verification.checkpoint === null
+        if (isC1) {
+          // Backfill checkpoint so future lookups work correctly
+          if (verification.checkpoint === null) {
+            await service.from('verifications').update({ checkpoint: 'C1' }).eq('id', verification.id)
+          }
           await processC1Completion(service, verification.candidate_id, verification.id, decision)
         } else if (verification.checkpoint === 'C2' || verification.checkpoint === 'C3') {
           await processRecheckCompletion(

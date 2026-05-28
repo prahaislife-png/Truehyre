@@ -22,15 +22,16 @@ export async function POST(
 
   if (!candidate) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  // Find the C1 verification that needs a fresh session
-  const { data: verification } = await service
+  // Find the C1 verification. Also handle legacy rows where checkpoint was not set (null).
+  const { data: allVerifications } = await service
     .from('verifications')
     .select('id, status, checkpoint')
     .eq('candidate_id', id)
-    .eq('checkpoint', 'C1')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
+    .order('created_at', { ascending: true })
+
+  const verification = (allVerifications ?? []).find(
+    v => v.checkpoint === 'C1' || v.checkpoint === null
+  )
 
   if (!verification) {
     return NextResponse.json({ error: 'No C1 verification found' }, { status: 404 })
@@ -55,9 +56,11 @@ export async function POST(
     return NextResponse.json({ error: msg }, { status: 502 })
   }
 
+  // Update session and also backfill checkpoint = 'C1' if it was null
   await service
     .from('verifications')
     .update({
+      checkpoint: 'C1',
       didit_session_id: sessionData.session_id,
       session_url: sessionData.url,
       status: 'not_started',

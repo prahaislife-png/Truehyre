@@ -27,8 +27,10 @@ export default async function CandidateDetailPage({
   if (!candidate) notFound()
 
   const verifications = (allVerifications ?? []) as Verification[]
-  // Most recent per checkpoint
-  const c1 = verifications.find(v => v.checkpoint === 'C1') ?? null
+  // Most recent per checkpoint. null-checkpoint rows are legacy C1 (checkpoint col was added later).
+  const c1 = verifications.find(v => v.checkpoint === 'C1')
+    ?? verifications.find(v => v.checkpoint === null)
+    ?? null
   const c2 = verifications.find(v => v.checkpoint === 'C2') ?? null
   const c3 = verifications.find(v => v.checkpoint === 'C3') ?? null
 

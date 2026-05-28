@@ -82,7 +82,11 @@ function CheckpointNode({
               {/* Scores row */}
               <div className="flex gap-4">
                 {verification.liveness_score != null && (
-                  <ScoreChip label="Liveness" value={Math.round(verification.liveness_score * 100)} />
+                  <ScoreChip label="Liveness" value={
+                    verification.liveness_score > 1
+                      ? Math.round(verification.liveness_score)
+                      : Math.round(verification.liveness_score * 100)
+                  } />
                 )}
                 {verification.face_match_score != null && (
                   <ScoreChip label="Face match" value={Math.round(verification.face_match_score * 100)} />
