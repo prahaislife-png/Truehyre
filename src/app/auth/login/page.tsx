@@ -14,6 +14,7 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const inviteToken = searchParams.get('invite')
+  const nextPath = searchParams.get('next')
   const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -25,11 +26,10 @@ function LoginForm() {
       setError(error.message)
       setLoading(false)
     } else {
-      // If came from an invite link, go accept it
       if (inviteToken) {
         router.push(`/invite/${inviteToken}`)
       } else {
-        router.push('/dashboard')
+        router.push(nextPath ?? '/dashboard')
       }
       router.refresh()
     }

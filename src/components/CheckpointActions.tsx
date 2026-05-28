@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface Props {
   candidateId: string
@@ -12,6 +13,7 @@ interface Props {
 const PENDING_STATUSES = ['not_started', 'in_progress', 'awaiting_user']
 
 export default function CheckpointActions({ candidateId, c1Approved, c2Status, c3Status }: Props) {
+  const router = useRouter()
   const [loading, setLoading] = useState<'C2' | 'C3' | null>(null)
   const [sessionUrl, setSessionUrl] = useState<{ checkpoint: string; url: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -35,6 +37,7 @@ export default function CheckpointActions({ candidateId, c1Approved, c2Status, c
         setError(data.error ?? 'Failed to create session')
       } else {
         setSessionUrl({ checkpoint, url: data.session_url as string })
+        router.refresh()
       }
     } catch {
       setError('Network error')

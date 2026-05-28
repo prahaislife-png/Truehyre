@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { createSession } from '@/lib/didit/client'
 import { logAudit } from '@/lib/audit'
+import { sendVerificationLink } from '@/lib/email/sendVerificationLink'
 
 export async function POST(
   request: NextRequest,
@@ -20,7 +21,7 @@ export async function POST(
   // Verify candidate is accessible to recruiter
   const { data: candidate } = await supabase
     .from('candidates')
-    .select('id, full_name, didit_session_id, overall_status')
+    .select('id, full_name, email, didit_session_id, overall_status')
     .eq('id', id)
     .single()
 
@@ -87,6 +88,24 @@ export async function POST(
     actorId: user.id,
     candidateId: id,
     meta: { session_id: sessionData.session_id },
+  })
+
+  // Email the candidate their verification link
+  const { data: profile } = await service.from('users').select('org_id').eq('id', user.id).single()
+  const { data: org } = profile?.org_id
+    ? await service.from('organizations').select('name').eq('id', profile.org_id).single()
+    : { data: null }
+
+  const CHECKPOINT_LABEL: Record<string, string> = {
+    C2: 'Interview check',
+    C3: 'Offer check',
+  }
+  await sendVerificationLink({
+    to: candidate.email,
+    candidateName: candidate.full_name,
+    verificationUrl: sessionData.url,
+    orgName: org?.name ?? 'TrueHire',
+    subject: `Action required: ${CHECKPOINT_LABEL[checkpoint] ?? checkpoint} verification`,
   })
 
   return NextResponse.json({ session_url: sessionData.url })

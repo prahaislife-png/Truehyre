@@ -66,7 +66,7 @@ export interface Candidate {
 export interface Verification {
   id: string
   candidate_id: string
-  checkpoint: 'C1' | 'C2' | 'C3'
+  checkpoint: 'C1' | 'C2' | 'C3' | null
   didit_session_id: string
   workflow_id: string
   status: CandidateStatus
@@ -93,6 +93,16 @@ export interface DiditDecision {
   aml_screenings?: AmlScreening[]
 }
 
+export interface DiditWarning {
+  risk?: string
+  feature?: string
+  node_id?: string
+  log_type?: string
+  additional_data?: Record<string, unknown>
+  long_description?: string
+  short_description?: string
+}
+
 export interface IdVerification {
   name?: string
   document_type?: string
@@ -100,7 +110,7 @@ export interface IdVerification {
   dob?: string
   nationality?: string
   expiration?: string
-  warnings?: string[]
+  warnings?: (string | DiditWarning)[]
 }
 
 export interface LivenessCheck {
@@ -134,6 +144,13 @@ export interface AmlHit {
   name?: string
   match_type?: string
   categories?: string[]
+  risk?: string
+  feature?: string
+  node_id?: string
+  log_type?: string
+  additional_data?: Record<string, unknown>
+  long_description?: string
+  short_description?: string
 }
 
 export interface WebhookEvent {

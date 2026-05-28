@@ -28,13 +28,16 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = request.nextUrl.pathname.startsWith('/auth')
   const isConsentRoute = request.nextUrl.pathname.startsWith('/consent')
   const isWebhook = request.nextUrl.pathname.startsWith('/api/webhooks')
+  const isVerifyRoute = request.nextUrl.pathname.startsWith('/verify')
 
   const isCallback = request.nextUrl.pathname === '/auth/callback'
 
-  if (isWebhook || isConsentRoute || isCallback) return supabaseResponse
+  if (isWebhook || isConsentRoute || isCallback || isVerifyRoute) return supabaseResponse
 
   if (!user && !isAuthRoute) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
+    const loginUrl = new URL('/auth/login', request.url)
+    loginUrl.searchParams.set('next', request.nextUrl.pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   if (user && isAuthRoute) {

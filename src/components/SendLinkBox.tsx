@@ -20,6 +20,9 @@ export default function SendLinkBox({ sessionUrl, candidateId, candidateName, ca
   const [copied, setCopied] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [verifyUrl, setVerifyUrl] = useState(sessionUrl)
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
+  const [showUrl, setShowUrl] = useState(false)
   const label = LABELS[checkpoint]
 
   async function copy() {
@@ -41,6 +44,17 @@ export default function SendLinkBox({ sessionUrl, candidateId, candidateName, ca
       setVerifyUrl(data.session_url)
     } finally {
       setRefreshing(false)
+    }
+  }
+
+  async function resendEmail() {
+    setResending(true)
+    try {
+      await fetch(`/api/candidates/${candidateId}/resend-link`, { method: 'POST' })
+      setResent(true)
+      setTimeout(() => setResent(false), 3000)
+    } finally {
+      setResending(false)
     }
   }
 
@@ -69,9 +83,25 @@ export default function SendLinkBox({ sessionUrl, candidateId, candidateName, ca
         The candidate opens this link on their phone and completes the verification. You'll see the result here automatically.
       </p>
 
-      <div className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-xs font-mono text-gray-600 break-all">
-        {verifyUrl}
+      {/* Link ready indicator */}
+      <div className="flex items-center gap-2 bg-white border border-blue-200 rounded-lg px-3 py-2">
+        <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+        </svg>
+        <span className="text-xs font-medium text-gray-700 flex-1">Verification link ready</span>
+        <button
+          onClick={() => setShowUrl(s => !s)}
+          className="text-xs text-blue-500 hover:underline"
+        >
+          {showUrl ? 'Hide' : 'Show link'}
+        </button>
       </div>
+
+      {showUrl && (
+        <div className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-xs font-mono text-gray-600 break-all">
+          {verifyUrl}
+        </div>
+      )}
 
       <div className="flex gap-2">
         <button
@@ -80,12 +110,13 @@ export default function SendLinkBox({ sessionUrl, candidateId, candidateName, ca
         >
           {copied ? '✓ Copied!' : 'Copy link'}
         </button>
-        <a
-          href={`mailto:${candidateEmail}?subject=${encodeURIComponent(`${label} — action required`)}&body=${encodeURIComponent(`Hi ${candidateName},\n\nPlease complete your ${label.toLowerCase()} for your job application:\n\n${verifyUrl}\n\nIt takes about 2 minutes on your phone. No app needed.`)}`}
-          className="flex-1 text-center rounded-lg border border-blue-200 bg-white py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors"
+        <button
+          onClick={resendEmail}
+          disabled={resending}
+          className="flex-1 rounded-lg border border-blue-200 bg-white py-2 text-sm text-blue-700 hover:bg-blue-50 disabled:opacity-50 transition-colors"
         >
-          Email
-        </a>
+          {resent ? '✓ Sent!' : resending ? 'Sending…' : 'Resend email'}
+        </button>
         <a
           href={`https://wa.me/?text=${encodeURIComponent(`Hi ${candidateName}, please complete your ${label.toLowerCase()} for your job application: ${verifyUrl} — takes ~2 min on your phone, no app needed.`)}`}
           target="_blank" rel="noopener noreferrer"

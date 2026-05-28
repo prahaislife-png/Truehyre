@@ -114,7 +114,7 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
                 </button>
                 <button type="submit" disabled={loading}
                   className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                  {loading ? 'Creating…' : 'Create & get link'}
+                  {loading ? 'Creating…' : 'Add candidate'}
                 </button>
               </div>
             </form>
@@ -122,8 +122,18 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
         ) : (
           <>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Send this link to the candidate</h2>
+              <h2 className="text-lg font-semibold">Candidate added</h2>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+            </div>
+
+            {/* Email sent confirmation */}
+            <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-4">
+              <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-sm text-green-800">
+                Verification link emailed to <strong>{form.email}</strong>
+              </p>
             </div>
 
             {/* Step explainer */}
@@ -131,7 +141,7 @@ export default function AddCandidateModal({ clients, onClose, onAdded }: Props) 
               <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">How it works</p>
               <div className="flex items-start gap-2 text-sm text-blue-900">
                 <span className="font-bold shrink-0">1.</span>
-                <span>Copy or send this link to <strong>{form.full_name || 'the candidate'}</strong> via email, WhatsApp, or any channel.</span>
+                <span>The link was emailed automatically. Use the options below if you need to resend to <strong>{form.full_name || 'the candidate'}</strong>.</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-blue-900">
                 <span className="font-bold shrink-0">2.</span>
