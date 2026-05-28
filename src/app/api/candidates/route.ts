@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { createSession } from '@/lib/didit/client'
 import { logAudit } from '@/lib/audit'
+import { sendVerificationLink } from '@/lib/email/sendVerificationLink'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -20,6 +21,9 @@ export async function POST(request: NextRequest) {
   // Get recruiter's org
   const { data: profile } = await service.from('users').select('org_id').eq('id', user.id).single()
   if (!profile?.org_id) return NextResponse.json({ error: 'No organization — complete onboarding first' }, { status: 403 })
+
+  // Get org name for the email
+  const { data: org } = await service.from('organizations').select('name').eq('id', profile.org_id).single()
 
   // Insert candidate
   const { data: candidate, error: candidateErr } = await service
@@ -76,6 +80,14 @@ export async function POST(request: NextRequest) {
     actorId: user.id,
     candidateId: candidate.id,
     meta: { email, aml_enabled: Boolean(aml_enabled) },
+  })
+
+  // Send verification link to candidate automatically
+  await sendVerificationLink({
+    to: email,
+    candidateName: full_name,
+    verificationUrl: sessionData.url,
+    orgName: org?.name ?? 'TrueHire',
   })
 
   return NextResponse.json({
