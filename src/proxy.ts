@@ -29,7 +29,9 @@ export async function proxy(request: NextRequest) {
   const isConsentRoute = request.nextUrl.pathname.startsWith('/consent')
   const isWebhook = request.nextUrl.pathname.startsWith('/api/webhooks')
 
-  if (isWebhook || isConsentRoute) return supabaseResponse
+  const isCallback = request.nextUrl.pathname === '/auth/callback'
+
+  if (isWebhook || isConsentRoute || isCallback) return supabaseResponse
 
   if (!user && !isAuthRoute) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
